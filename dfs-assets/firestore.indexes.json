@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "assets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "department", "order": "ASCENDING" },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "issuance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recipientDept", "order": "ASCENDING" },
+        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "inventoryIssuances",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recipientDept", "order": "ASCENDING" },
+        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "inventory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "department", "order": "ASCENDING" },
+        { "fieldPath": "name",       "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,597 @@
+rules_version = '2';
+
+// Garment Production Tracking — Firestore Security Rules
+//
+// Enforcement, not decoration. Every check here is repeated in the client
+// for the sake of fast feedback, but this file is what actually decides.
+//
+// Two properties matter most:
+//   1. A tenant can never see or touch another tenant's data.
+//   2. An expired licence blocks writes and cannot be extended by the
+//      customer, whatever they do to the client bundle.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ---------------------------------------------------------------- */
+    /* Identity                                                          */
+    /* ---------------------------------------------------------------- */
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function userExists() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    // An Auth account with no profile document can do nothing at all. This
+    // is what makes it safe to leave email/password sign-up enabled, which
+    // the client-side account creation in Part F2 requires.
+    function active() {
+      return userExists() && userDoc().disabled != true;
+    }
+
+    function tenantId() {
+      return userDoc().tenantId;
+    }
+
+    function role() {
+      return userDoc().role;
+    }
+
+    function hasRole(roles) {
+      return active() && role() in roles;
+    }
+
+    /*
+     * Developer-administrator access is a document, not a constant here.
+     *
+     * Hardcoding a UID meant editing and redeploying rules for every change,
+     * and made the rules file carry an environment-specific value. A
+     * vendorAdmins document is created once by hand in the Firebase console
+     * and thereafter managed from the vendor console.
+     *
+     * The collection is unreadable and unwritable by every customer role, so
+     * nobody can grant themselves vendor access from inside the application.
+     * If the last document is deleted, recovery is through the Firebase
+     * console — the same position as before.
+     */
+    function isDevAdmin() {
+      return signedIn() && (
+        exists(/databases/$(database)/documents/devAdmins/$(request.auth.uid))
+        // Kept so an existing grant keeps working. Move the document to
+        // devAdmins when convenient; nothing breaks either way, and
+        // accepting both means a rename cannot lock you out.
+        || exists(/databases/$(database)/documents/vendorAdmins/$(request.auth.uid))
+      );
+    }
+
+    function sameTenant(tid) {
+      return active() && tenantId() == tid;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Licensing                                                         */
+    /* ---------------------------------------------------------------- */
+
+    function licence() {
+      return get(/databases/$(database)/documents/licenses/$(tenantId())).data;
+    }
+
+    // Reads are never blocked by licence state. An expired customer keeps
+    // full access to their own production history and exports; only writes
+    // stop. Holding a factory's data hostage would be both hostile and bad
+    // business — see Part K5.
+    /*
+     * ROOT CAUSE of every "missing or insufficient permissions" a customer
+     * saw: this compared `request.time`, a timestamp, against `graceUntil`,
+     * which the application writes as an ISO string. Comparing a timestamp
+     * to a string is a type error, the expression fails, and a failed
+     * condition denies — so no customer could write anything at all.
+     *
+     * The vendor account never hit it because isDevAdmin() short-circuits
+     * first, which is exactly why it looked like a customer-specific
+     * problem.
+     *
+     * Dates are now also stored as epoch milliseconds, which are unambiguous
+     * on both sides. Licences written before this change have no `Ms` field,
+     * and fall back to the status check alone rather than locking the
+     * customer out; the vendor console backfills them.
+     */
+    function licenceAllowsWrite() {
+      let lic = licence();
+      return isDevAdmin() || (
+        active()
+        && exists(/databases/$(database)/documents/licenses/$(tenantId()))
+        && lic.status in ['TRIAL', 'ACTIVE', 'GRACE']
+        && (
+          ('graceUntilMs' in lic) && lic.graceUntilMs != null
+            ? request.time.toMillis() < lic.graceUntilMs
+            : true
+        )
+      );
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Licence limits                                                    */
+    /* ---------------------------------------------------------------- */
+
+    /*
+     * Factories, modules and user accounts are billable, so the licensed
+     * count has to be enforced by the database rather than by the interface.
+     *
+     * Rules cannot count documents, so each tenant carries a counter at
+     * tenantUsage/{tenantId}, written alongside the record it counts.
+     */
+
+    /*
+     * The limit check reads the counter as it stands and compares it to the
+     * licence. It does not verify that the write moves the counter by
+     * exactly one.
+     *
+     * That stricter check needs `getAfter`, and combining it with a merge
+     * write proved fragile enough that legitimate creates were being refused
+     * with no way to see why. A limit that blocks paying customers is worse
+     * than one a determined administrator could work around by editing the
+     * counter directly — and the vendor console shows the counter beside a
+     * real document count, so tampering or drift is visible.
+     *
+     * Every access below is a literal path and a literal field name. Rules
+     * do not reliably index a map with a variable key, and an expression
+     * that fails to evaluate denies the write.
+     */
+
+    function usage() {
+      return exists(/databases/$(database)/documents/tenantUsage/$(tenantId()))
+        ? get(/databases/$(database)/documents/tenantUsage/$(tenantId())).data
+        : {};
+    }
+
+    function limits() {
+      let lic = licence();
+      return ('limits' in lic) && lic.limits != null ? lic.limits : {};
+    }
+
+    function underFactoryLimit() {
+      let used = ('factories' in usage()) && usage().factories != null ? usage().factories : 0;
+      let cap = ('maxFactories' in limits()) && limits().maxFactories != null
+        ? limits().maxFactories
+        : 999999;
+      return used < cap;
+    }
+
+    function underModuleLimit() {
+      let used = ('modules' in usage()) && usage().modules != null ? usage().modules : 0;
+      let cap = ('maxModules' in limits()) && limits().maxModules != null
+        ? limits().maxModules
+        : 999999;
+      return used < cap;
+    }
+
+    function underUserLimit() {
+      let used = ('users' in usage()) && usage().users != null ? usage().users : 0;
+      let cap = ('maxUsers' in limits()) && limits().maxUsers != null
+        ? limits().maxUsers
+        : 999999;
+      return used < cap;
+    }
+
+    match /tenantUsage/{tid} {
+      allow read: if isDevAdmin() || sameTenant(tid);
+      /*
+       * Written alongside the record it counts. Restricted to the roles that
+       * can create a counted record in the first place — otherwise any
+       * operator could zero the counter and the licence limits would mean
+       * nothing.
+       */
+      allow write: if isDevAdmin()
+        || (sameTenant(tid)
+            && licenceAllowsWrite()
+            && role() in ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Vendor-only collections                                           */
+    /* ---------------------------------------------------------------- */
+
+    match /devAdmins/{uid} {
+      // Unreadable by tenants, so the developer layer is undetectable from
+      // inside a customer's application.
+      allow read, write: if isDevAdmin();
+    }
+
+    match /vendorAdmins/{uid} {
+      allow read, write: if isDevAdmin();
+    }
+
+    match /tenants/{tid} {
+      allow read: if isDevAdmin() || sameTenant(tid);
+      allow write: if isDevAdmin();
+    }
+
+    match /licenses/{tid} {
+      // Customers may read their own licence — the app shows status and
+      // limits — but no tenant role can write it at any level.
+      allow read: if isDevAdmin() || sameTenant(tid);
+      allow write: if isDevAdmin();
+    }
+
+    match /licenseEvents/{id} {
+      allow read: if isDevAdmin();
+      allow create: if isDevAdmin();
+      allow update, delete: if false;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Users                                                             */
+    /* ---------------------------------------------------------------- */
+
+    match /users/{uid} {
+      allow read: if isDevAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || (hasRole(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER'])
+            && resource.data.tenantId == tenantId());
+
+      // An administrator can only create users inside their own tenant, and
+      // only within the licensed number. Placing a user into a different
+      // tenant is a vendor action by definition.
+      allow create: if isDevAdmin()
+        || (hasRole(['SYSTEM_ADMIN', 'ADMIN'])
+            && licenceAllowsWrite()
+            && request.resource.data.tenantId == tenantId()
+            && underUserLimit());
+
+      // tenantId is immutable: without this, an administrator could move an
+      // account into another customer's tenant.
+      /*
+       * Three separate protections, each closing a real escalation:
+       *
+       *  - tenantId is immutable, so nobody moves an account between
+       *    customers
+       *  - only a SYSTEM_ADMIN may change a role, so an ADMIN cannot
+       *    promote themselves to the top of their own tenant
+       *  - nobody may change their own role at all, so a SYSTEM_ADMIN
+       *    cannot quietly grant themselves something and an account
+       *    cannot un-disable itself
+       */
+      allow update: if isDevAdmin()
+        || (hasRole(['SYSTEM_ADMIN', 'ADMIN'])
+            && licenceAllowsWrite()
+            && resource.data.tenantId == tenantId()
+            && request.resource.data.tenantId == resource.data.tenantId
+            && (
+              request.resource.data.role == resource.data.role
+              || (role() == 'SYSTEM_ADMIN' && request.auth.uid != uid)
+            ));
+
+      /*
+       * A person may update their own profile, but only the two fields that
+       * belong to them.
+       *
+       * Without this the forced password change is a trap: an operator sets
+       * a new password, cannot clear the flag because writing a profile
+       * needs an admin role, and is returned to the same screen forever.
+       *
+       * Role, tenant, scope, scan access and the disabled flag must all be
+       * unchanged, so this grants nothing beyond the password state.
+       */
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.tenantId == resource.data.tenantId
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.disabled == resource.data.disabled
+        && request.resource.data.scanAccess == resource.data.scanAccess
+        && request.resource.data.scope == resource.data.scope
+        && request.resource.data.capabilities == resource.data.capabilities;
+
+      allow delete: if false;
+    }
+
+    match /roles/{id} {
+      allow read: if active();
+      allow write: if hasRole(['SYSTEM_ADMIN']) && licenceAllowsWrite();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Configuration and master data                                     */
+    /* ---------------------------------------------------------------- */
+
+    /*
+     * Vendor support access.
+     *
+     * A customer's data is invisible to the vendor by default, which is
+     * correct for privacy but useless for support — every question becomes a
+     * screen share. The vendor admin can therefore read any tenant, and
+     * write to one when they deliberately turn changes on.
+     *
+     * This grants the vendor nothing it could not already grant itself by
+     * editing the rules, so it widens convenience rather than authority. The
+     * application shows a permanent banner whenever a vendor is looking at
+     * someone else's data, so it can never be mistaken for their own.
+     */
+    function tenantScoped() {
+      return active() && resource.data.tenantId == tenantId();
+    }
+
+    function writingIntoOwnTenant() {
+      return active() && request.resource.data.tenantId == tenantId();
+    }
+
+    /*
+     * Create, update and delete are written separately rather than as one
+     * `write` rule, because the three operations do not have the same
+     * documents available.
+     *
+     *   create  — no `resource`; only the incoming document exists
+     *   update  — both exist and both must belong to this tenant
+     *   delete  — no `request.resource`; only the stored document exists
+     *
+     * Referencing the missing side is not merely false, it can fail
+     * evaluation outright, and a failed rule denies. So each helper touches
+     * only what its operation actually has.
+     */
+    function canCreateHere(roles) {
+      return hasRole(roles)
+        && licenceAllowsWrite()
+        && request.resource.data.tenantId == tenantId();
+    }
+
+    function canUpdateHere(roles) {
+      return hasRole(roles)
+        && licenceAllowsWrite()
+        && resource.data.tenantId == tenantId()
+        && request.resource.data.tenantId == tenantId();
+    }
+
+    function canDeleteHere(roles) {
+      return hasRole(roles)
+        && licenceAllowsWrite()
+        && resource.data.tenantId == tenantId();
+    }
+
+    /*
+     * Platform settings and sessions.
+     *
+     * Settings are readable by anyone signed in — the application needs the
+     * footer text and the idle timeout before it can render — and writable
+     * only by the vendor.
+     *
+     * A session document holds which sign-in currently owns an account.
+     * Each person may only touch their own.
+     */
+    match /platformSettings/{id} {
+      allow read: if signedIn();
+      allow write: if isDevAdmin();
+    }
+
+    match /sessions/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if isDevAdmin();
+    }
+
+    match /globalSettings/{id} {
+      allow read: if active();
+      allow write: if isDevAdmin();
+    }
+
+    // Config overrides carry the whole settings chain. The document id
+    // encodes its level, so the rule can require that the id and the
+    // declared scope agree — otherwise a supervisor allowed to override a
+    // module could write a document claiming to be the organisation layer
+    // and change settings for every factory at once.
+    match /configOverrides/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+
+      allow delete: if canDeleteHere(
+        ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+
+      allow create, update: if writingIntoOwnTenant()
+        && licenceAllowsWrite()
+        && id == request.resource.data.scope.lower() + '_' + request.resource.data.scopeId
+        && (
+          // Organisation and factory levels are administrator territory.
+          (request.resource.data.scope in ['TENANT', 'FACTORY']
+            && role() in ['SYSTEM_ADMIN', 'ADMIN'])
+          // Everything below can also be set by managers and supervisors,
+          // who are the people actually balancing lines.
+          || (request.resource.data.scope in
+                ['DEPARTMENT', 'SECTION', 'STYLE', 'MODULE', 'MODULE_STYLE']
+              && role() in ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR'])
+        );
+    }
+
+    // Firestore rules have no conditional path matching, so each collection
+    // gets its own block. Shared conditions live in the helpers above.
+
+    match /factories/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      // A factory is the most expensive thing a customer can create, so it
+      // needs the top role in the tenant and a licence that covers it.
+      allow create: if isDevAdmin()
+        || (canCreateHere(['SYSTEM_ADMIN']) && underFactoryLimit());
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow delete: if isDevAdmin()
+        || canDeleteHere(['SYSTEM_ADMIN']);
+    }
+
+    match /departments/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+    }
+
+    match /sections/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+    }
+
+    match /modules/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin()
+        || (canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']) && underModuleLimit());
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow delete: if isDevAdmin()
+        || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+    }
+
+    match /styles/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER']);
+    }
+
+    match /purchaseOrders/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+    }
+
+    match /poLines/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+    }
+
+    match /dailyPlans/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+    }
+
+    match /shifts/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if isDevAdmin() || canCreateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow update: if isDevAdmin() || canUpdateHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+      allow delete: if isDevAdmin() || canDeleteHere(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR']);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Bundles and the scan ledger                                       */
+    /* ---------------------------------------------------------------- */
+
+    match /bundles/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if hasRole(['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR'])
+        && writingIntoOwnTenant() && licenceAllowsWrite();
+      // Movement fields only. Quantity is fixed at creation and never
+      // changes (decision Q2), so an update that alters it is rejected.
+      allow update: if active() && licenceAllowsWrite()
+        && resource.data.tenantId == tenantId()
+        && request.resource.data.qty == resource.data.qty
+        && request.resource.data.poLineId == resource.data.poLineId;
+      allow delete: if false;
+    }
+
+    function canScan(direction) {
+      return active()
+        && userDoc().scanAccess in [direction, 'BOTH']
+        && role() in ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR', 'OPERATOR'];
+    }
+
+    match /scanEvents/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+
+      // Create only. The document id is bundleId__moduleId__direction, so a
+      // repeat scan targets a document that already exists and this rule
+      // rejects it — duplicate production is structurally impossible rather
+      // than merely unlikely. See Part C4.
+      /*
+       * The quantity must match the bundle it refers to.
+       *
+       * Without this an operator could write any figure they liked and
+       * inflate the factory's output — and production numbers are the whole
+       * product. The bundle's quantity is fixed at creation and never
+       * changes, so this is a safe comparison.
+       */
+      allow create: if writingIntoOwnTenant()
+        && licenceAllowsWrite()
+        && canScan(request.resource.data.direction)
+        && request.resource.data.userId == request.auth.uid
+        && id == request.resource.data.bundleId + '__'
+               + request.resource.data.moduleId + '__'
+               + request.resource.data.direction
+        && request.resource.data.qty ==
+             get(/databases/$(database)/documents/bundles/$(request.resource.data.bundleId)).data.qty;
+
+      // Historical production is never edited or removed. Corrections are
+      // new compensating events, per §28.
+      allow update, delete: if false;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Aggregates                                                        */
+    /* ---------------------------------------------------------------- */
+
+    // Counters are written by commutative increments inside the same batch
+    // as the scan event that justifies them (Part D2).
+    match /moduleWip/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      // WIP rises on the way in and falls on the way out, so BOTH
+      // directions write this counter. Requiring IN access here meant an
+      // OUT-only operator had their entire scan batch rejected — and
+      // because batches are atomic, the scan itself vanished with it.
+      allow create, update: if writingIntoOwnTenant()
+        && licenceAllowsWrite()
+        && (canScan('IN') || canScan('OUT'));
+      allow delete: if false;
+    }
+
+    match /hourlyProduction/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create, update: if writingIntoOwnTenant()
+        && licenceAllowsWrite() && canScan('OUT');
+      allow delete: if false;
+    }
+
+    match /wipSnapshots/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if writingIntoOwnTenant() && licenceAllowsWrite();
+      allow update, delete: if false;
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Audit                                                             */
+    /* ---------------------------------------------------------------- */
+
+    match /auditLogs/{id} {
+      allow read: if isDevAdmin()
+        || (hasRole(['SYSTEM_ADMIN', 'ADMIN']) && tenantScoped());
+
+      // An entry must name the person writing it. Without this, anyone
+      // could log an action against a colleague — which is worse than no
+      // audit trail, because it looks authoritative.
+      allow create: if writingIntoOwnTenant()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+
+    match /notifications/{id} {
+      allow read: if tenantScoped() || isDevAdmin();
+      allow create: if canCreateHere(
+        ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR', 'OPERATOR', 'VIEWER']);
+      allow update: if canUpdateHere(
+        ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR', 'OPERATOR', 'VIEWER']);
+      allow delete: if canDeleteHere(
+        ['SYSTEM_ADMIN', 'ADMIN', 'MANAGER', 'SUPERVISOR', 'OPERATOR', 'VIEWER']);
+    }
+
+    /* Anything not matched above is denied. */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

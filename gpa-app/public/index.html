@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GPA Calculator — Sign In</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative; z-index: 1;
+}
+@media (max-width: 768px) { .login-wrap { grid-template-columns: 1fr; } .hero { display: none; } }
+
+/* Hero side */
+.hero {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 4rem 3rem;
+  border-right: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.hero-decor {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%);
+  top: -100px; left: -100px; pointer-events: none;
+}
+.hero-decor2 {
+  position: absolute; width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(56,189,248,.12) 0%, transparent 70%);
+  bottom: -80px; right: -80px; pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.25);
+  border-radius: 100px; padding: 6px 16px;
+  font-size: 12px; font-weight: 600; color: var(--accent2);
+  letter-spacing: .07em; text-transform: uppercase;
+  margin-bottom: 1.5rem; width: fit-content;
+}
+.hero-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.hero h1 {
+  font-family: var(--ff-head); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 800; line-height: 1.1; letter-spacing: -.02em;
+  background: linear-gradient(135deg, #fff 30%, var(--accent2) 65%, var(--accent3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 1rem;
+}
+.hero p { color: var(--text2); font-size: 15px; font-weight: 300; max-width: 380px; line-height: 1.7; margin-bottom: 2rem; }
+.feature-list { display: flex; flex-direction: column; gap: 12px; }
+.feature-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--text2);
+}
+.feature-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.stats-row { display: flex; gap: 2rem; margin-top: 2.5rem; }
+.stat-item .num { font-family: var(--ff-head); font-size: 1.75rem; font-weight: 800; color: var(--text); }
+.stat-item .lbl { font-size: 12px; color: var(--text3); }
+
+/* Sign-in side */
+.signin-side {
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.signin-box {
+  width: 100%; max-width: 400px;
+  animation: fadeUp .4s ease;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+.signin-logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 2rem;
+}
+.signin-logo-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.signin-logo-text { font-family: var(--ff-head); font-size: 1.1rem; font-weight: 800; }
+.signin-title { font-family: var(--ff-head); font-size: 1.5rem; font-weight: 800; margin-bottom: .375rem; }
+.signin-sub { color: var(--text2); font-size: 14px; margin-bottom: 2rem; }
+
+.google-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 13px; border-radius: var(--radius-lg);
+  background: #fff; border: none; color: #1f2937;
+  font-family: var(--ff-body); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all .18s;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  margin-bottom: 1.5rem;
+}
+.google-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+.google-btn:active { transform: none; }
+.google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.divider {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+.divider span { font-size: 12px; color: var(--text3); }
+
+.email-form { display: flex; flex-direction: column; gap: .75rem; }
+.email-form input { padding: 11px 14px; font-size: 14px; }
+
+.tab-toggle {
+  display: flex; background: var(--surface2); border-radius: var(--radius); padding: 4px;
+  border: 1px solid var(--border); margin-bottom: 1.25rem;
+}
+.tab-toggle button {
+  flex: 1; padding: 8px; border: none; border-radius: 7px; background: transparent;
+  color: var(--text2); font-family: var(--ff-body); font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all .15s;
+}
+.tab-toggle button.active { background: var(--surface3); color: var(--text); }
+
+.terms-note { font-size: 11px; color: var(--text3); text-align: center; margin-top: 1.25rem; line-height: 1.6; }
+.terms-note a { color: var(--accent2); text-decoration: none; }
+
+.free-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2);
+  border-radius: var(--radius); padding: .75rem 1rem;
+  font-size: 13px; margin-bottom: 1.5rem;
+}
+.free-banner .icon { font-size: 18px; }
+.free-banner strong { color: #34d399; }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div id="toast"></div>
+
+<div class="login-wrap">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-decor"></div>
+    <div class="hero-decor2"></div>
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Academic GPA Platform</div>
+    <h1>Calculate Your<br/>Academic GPA<br/>Instantly</h1>
+    <p>Track semester GPAs, manage subjects by faculty, view history, and get instant degree classification — built for university students.</p>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-icon">📚</div> Subject-wise GPA tracking by faculty</div>
+      <div class="feature-item"><div class="feature-icon">📊</div> Current & final GPA with degree classification</div>
+      <div class="feature-item"><div class="feature-icon">🕒</div> Full calculation history saved to your account</div>
+      <div class="feature-item"><div class="feature-icon">⚙️</div> Admin portal for faculty & subject management</div>
+      <div class="feature-item"><div class="feature-icon">🔒</div> Secured with Firebase Authentication</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">8</div><div class="lbl">Semesters</div></div>
+      <div class="stat-item"><div class="num">4.0</div><div class="lbl">Max GPA</div></div>
+      <div class="stat-item"><div class="num">Free</div><div class="lbl">First use</div></div>
+    </div>
+  </div>
+
+  <!-- Sign-in -->
+  <div class="signin-side">
+    <div class="signin-box">
+      <div class="signin-logo">
+        <div class="signin-logo-icon">🎓</div>
+        <div class="signin-logo-text">GPA Calc</div>
+      </div>
+      <h2 class="signin-title">Welcome back</h2>
+      <p class="signin-sub">Sign in to access your GPA dashboard</p>
+
+      <div class="free-banner">
+        <span class="icon">🎁</span>
+        <span><strong>First calculation is free!</strong> Premium unlocks unlimited access.</span>
+      </div>
+
+      <!-- Google Sign In -->
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="divider"><span>or use email</span></div>
+
+      <!-- Email toggle -->
+      <div class="tab-toggle">
+        <button class="active" id="tab-login" onclick="setAuthMode('login')">Sign In</button>
+        <button id="tab-register" onclick="setAuthMode('register')">Create Account</button>
+      </div>
+
+      <div class="email-form">
+        <div class="input-wrap" style="margin-bottom:0">
+          <input type="email" id="email" placeholder="Email address" />
+        </div>
+        <div class="input-wrap" style="margin-bottom:0">
+          <input type="password" id="password" placeholder="Password" />
+        </div>
+        <div class="input-wrap hidden" id="name-wrap" style="margin-bottom:0">
+          <input type="text" id="displayName" placeholder="Your full name" />
+        </div>
+        <button class="btn btn-primary btn-full" id="auth-btn" onclick="signInEmail()">Sign In</button>
+        <button class="btn" style="width:100%;justify-content:center;font-size:13px;color:var(--text2)" onclick="forgotPassword()">Forgot password?</button>
+      </div>
+
+      <p class="terms-note">
+        By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br/>
+        Your data is securely stored with Firebase.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword,
+         createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile,
+         onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// Load config
+const script = document.createElement('script'); script.src = 'firebase-config.js'; document.head.appendChild(script);
+await new Promise(r => script.onload = r);
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const gProvider = new GoogleAuthProvider();
+
+// Redirect if already signed in
+onAuthStateChanged(auth, user => {
+  if (user) window.location.href = 'app.html';
+});
+
+// ── Auth mode toggle ──
+let authMode = 'login';
+window.setAuthMode = (mode) => {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+  document.getElementById('name-wrap').classList.toggle('hidden', mode === 'login');
+  document.getElementById('auth-btn').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+};
+
+// ── Ensure user doc ──
+async function ensureUserDoc(user) {
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName || "",
+      photoURL: user.photoURL || "",
+      role: "free",
+      usageCount: 0,
+      isPremium: false,
+      createdAt: serverTimestamp(),
+      faculty: ""
+    });
+  }
+  return snap.exists() ? snap.data() : null;
+}
+
+// ── Google Sign In ──
+window.signInGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, gProvider);
+    await ensureUserDoc(result.user);
+    window.location.href = 'app.html';
+  } catch (e) {
+    showToast("Google sign-in failed: " + e.message, "error");
+  }
+};
+
+// ── Email sign in / register ──
+window.signInEmail = async () => {
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  const name  = document.getElementById('displayName')?.value.trim();
+  if (!email || !pass) return showToast("Please enter email and password", "error");
+  const btn = document.getElementById('auth-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    if (authMode === 'register') {
+      if (!name) return showToast("Enter your name", "error");
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      await ensureUserDoc(cred.user);
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+    window.location.href = 'app.html';
+  } catch (e) {
+    btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+    showToast(e.message.replace("Firebase: ", ""), "error");
+  }
+};
+
+// ── Forgot password ──
+window.forgotPassword = async () => {
+  const email = document.getElementById('email').value.trim();
+  if (!email) return showToast("Enter your email first", "error");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showToast("Password reset email sent!", "success");
+  } catch (e) { showToast(e.message, "error"); }
+};
+</script>
+</body>
+</html>

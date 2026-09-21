@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isPremium() {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isPremium == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    // ── Users collection ──
+    match /users/{uid} {
+      // Users can read/write their own doc; admins can read/write all
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+
+      // ── Calculation history sub-collection ──
+      match /history/{historyId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create: if isOwner(uid);
+        allow update: if isOwner(uid);
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+
+      // ── Saved subjects sub-collection ──
+      match /savedSubjects/{docId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow write: if isOwner(uid) && isPremium();
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+    }
+
+    // ── Faculties collection ──
+    match /faculties/{facultyId} {
+      // All authenticated users can read faculties
+      allow read: if isSignedIn();
+      // Only admins can write faculties
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Deny everything else ──
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

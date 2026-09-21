@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GPA Calc — Admin Portal</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+.admin-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; position: relative; z-index: 1; }
+@media(max-width:768px){ .admin-layout{grid-template-columns:1fr} .admin-sidebar{display:none} .admin-sidebar.open{display:flex;position:fixed;inset:0;z-index:200;width:240px} }
+
+.admin-sidebar {
+  display: flex; flex-direction: column;
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 1.25rem 1rem;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.admin-logo { display: flex; align-items: center; gap: 10px; padding: .5rem .5rem 1.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+.admin-logo-icon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--red), #f97316); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.admin-logo-text { font-family: var(--ff-head); font-size: .95rem; font-weight: 800; }
+.admin-nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 11px; border-radius: var(--radius); margin-bottom: 2px; font-size: 13px; color: var(--text2); cursor: pointer; transition: all .15s; border: none; background: transparent; width: 100%; text-align: left; }
+.admin-nav-item:hover { background: var(--surface2); color: var(--text); }
+.admin-nav-item.active { background: rgba(239,68,68,.12); color: #fca5a5; font-weight: 500; }
+.nav-section-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; padding: .75rem 11px .25rem; font-weight: 600; }
+
+.admin-main { overflow-y: auto; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); background: rgba(8,12,24,.8); backdrop-filter: blur(12px); position: sticky; top:0; z-index:100; }
+.admin-header h2 { font-family: var(--ff-head); font-size: 1rem; font-weight: 700; }
+.admin-content { padding: 1.5rem; }
+.menu-btn2 { display: none; background: transparent; border: 1px solid var(--border2); border-radius: 8px; color: var(--text2); font-size: 18px; padding: 6px 10px; cursor: pointer; }
+@media(max-width:768px){ .menu-btn2{display:flex} }
+
+.view { display: none; animation: fadeIn .2s ease; }
+.view.active { display: block; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Stats */
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin-bottom:1.5rem; }
+.a-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1rem; position:relative; overflow:hidden; }
+.a-stat::after { content:''; position:absolute; bottom:0;left:0;right:0; height:2px; background:var(--sc,var(--accent)); }
+.a-stat-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+.a-stat-val { font-family:var(--ff-head); font-size:1.6rem; font-weight:800; }
+
+/* Table */
+.data-table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,.02); }
+
+/* Form panel */
+.form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.25rem; }
+.form-panel-title { font-family: var(--ff-head); font-size: .95rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:500px){ .form-grid{grid-template-columns:1fr} }
+
+/* Subject item in faculty */
+.subj-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.subj-row input { flex: 1; }
+.subj-row input:last-of-type { max-width: 90px; }
+
+/* User row actions */
+.action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Search */
+.search-bar { display: flex; gap: 8px; margin-bottom: 1rem; }
+.search-bar input { flex: 1; }
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.toggle { position: relative; width: 40px; height: 22px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--surface3); border-radius: 22px; cursor: pointer; transition: .2s; border: 1px solid var(--border2); }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: var(--text3); left: 2px; top: 2px; transition: .2s; }
+.toggle input:checked + .toggle-slider { background: rgba(16,185,129,.25); border-color: rgba(16,185,129,.4); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: var(--green); }
+
+@media(max-width:600px){ .admin-content{padding:1rem} }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div id="toast"></div>
+
+<!-- Faculty modal -->
+<div class="modal-overlay" id="faculty-modal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title" id="fac-modal-title">Add Faculty</div>
+      <button class="modal-close" onclick="closeModal('faculty-modal')">✕</button>
+    </div>
+    <div class="input-wrap"><label>Faculty Name</label><input type="text" id="fac-name" placeholder="e.g. Faculty of Engineering" /></div>
+    <div class="input-wrap"><label>Faculty Code</label><input type="text" id="fac-code" placeholder="e.g. ENG" /></div>
+    <div class="input-wrap"><label>Description</label><input type="text" id="fac-desc" placeholder="Optional description" /></div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:.5rem;font-weight:500">Default Subjects (optional)</label>
+      <div id="fac-subjects-list"></div>
+      <button class="btn-add-row" onclick="addFacSubj()" style="margin-top:6px">+ Add Subject</button>
+    </div>
+    <button class="btn btn-primary btn-full" id="fac-save-btn" onclick="saveFaculty()">Save Faculty</button>
+  </div>
+</div>
+
+<!-- User detail modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit User</div>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div id="user-modal-body"></div>
+  </div>
+</div>
+
+<!-- Confirm delete modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header"><div class="modal-title">⚠️ Confirm Delete</div><button class="modal-close" onclick="closeModal('confirm-modal')">✕</button></div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:1.5rem" id="confirm-msg">Are you sure?</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;justify-content:center" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" style="flex:1;justify-content:center" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="admin-logo">
+      <div class="admin-logo-icon">⚙️</div>
+      <div class="admin-logo-text">Admin Portal</div>
+    </div>
+    <div class="nav-section-label">Management</div>
+    <button class="admin-nav-item active" onclick="showAdminView('overview', this)">📊 Overview</button>
+    <button class="admin-nav-item" onclick="showAdminView('users', this)">👥 Users</button>
+    <button class="admin-nav-item" onclick="showAdminView('faculties', this)">🏫 Faculties</button>
+    <div class="nav-section-label" style="margin-top:.5rem">Account</div>
+    <a href="app.html" class="admin-nav-item">← Back to App</a>
+    <button class="admin-nav-item" onclick="signOut()" style="margin-top:.25rem">🚪 Sign Out</button>
+  </aside>
+
+  <!-- Main -->
+  <div class="admin-main">
+    <div class="admin-header">
+      <button class="menu-btn2" onclick="document.getElementById('admin-sidebar').classList.toggle('open')">☰</button>
+      <h2 id="admin-view-title">Overview</h2>
+      <span class="badge badge-red">⚙️ Admin</span>
+    </div>
+    <div class="admin-content">
+
+      <!-- Overview -->
+      <div class="view active" id="aview-overview">
+        <div class="admin-stats" id="overview-stats">
+          <div class="a-stat" style="--sc:var(--accent2)"><div class="a-stat-label">Total Users</div><div class="a-stat-val" id="stat-users">—</div></div>
+          <div class="a-stat" style="--sc:var(--gold)"><div class="a-stat-label">Premium</div><div class="a-stat-val" id="stat-premium">—</div></div>
+          <div class="a-stat" style="--sc:var(--green)"><div class="a-stat-label">Faculties</div><div class="a-stat-val" id="stat-faculties">—</div></div>
+          <div class="a-stat" style="--sc:var(--accent3)"><div class="a-stat-label">Free Users</div><div class="a-stat-val" id="stat-free">—</div></div>
+        </div>
+
+        <div class="form-panel">
+          <div class="form-panel-title">⚡ Quick Actions</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="showAdminView('faculties', document.querySelectorAll('.admin-nav-item')[2])">🏫 Manage Faculties</button>
+            <button class="btn btn-primary" onclick="showAdminView('users', document.querySelectorAll('.admin-nav-item')[1])">👥 Manage Users</button>
+            <button class="btn" onclick="openFacultyModal()">+ Add Faculty</button>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <div class="form-panel-title">📋 Recent Users</div>
+          <div id="recent-users-list"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div class="view" id="aview-users">
+        <div class="form-panel">
+          <div class="form-panel-title">👥 All Users</div>
+          <div class="search-bar">
+            <input type="text" id="user-search" placeholder="Search by name or email…" oninput="filterUsers()" />
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Faculty</th>
+                  <th>Usage</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3)"><span class="spinner"></span></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faculties -->
+      <div class="view" id="aview-faculties">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+          <h3 style="font-family:var(--ff-head);font-size:1rem;font-weight:700">🏫 Faculties & Subjects</h3>
+          <button class="btn btn-primary" onclick="openFacultyModal()">+ Add Faculty</button>
+        </div>
+        <div id="faculties-list"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs,
+         collection, query, orderBy, limit, serverTimestamp, deleteDoc, writeBatch }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const s = document.createElement('script'); s.src = 'firebase-config.js'; document.head.appendChild(s);
+await new Promise(r => s.onload = r);
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+let allUsers = [], allFaculties = [];
+let editingFacId = null, facSubjects = [];
+
+// ── Auth guard ──
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = 'index.html'; return; }
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists() || snap.data().role !== 'admin') {
+    alert("Access denied. Admin only.");
+    window.location.href = 'app.html';
+    return;
+  }
+  loadData();
+});
+
+async function loadData() {
+  await Promise.all([loadUsers(), loadFaculties()]);
+  renderOverview();
+  renderUsersTable();
+  renderFacultiesList();
+}
+
+async function loadUsers() {
+  const snap = await getDocs(query(collection(db, "users"), orderBy("createdAt", "desc")));
+  allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+async function loadFaculties() {
+  const snap = await getDocs(collection(db, "faculties"));
+  allFaculties = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// ── Views ──
+window.showAdminView = (name, btn) => {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('aview-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = { overview:'Overview', users:'User Management', faculties:'Faculty Management' };
+  document.getElementById('admin-view-title').textContent = titles[name];
+  document.getElementById('admin-sidebar').classList.remove('open');
+};
+
+// ── Overview ──
+function renderOverview() {
+  const premium = allUsers.filter(u => u.isPremium || u.role === 'admin').length;
+  document.getElementById('stat-users').textContent = allUsers.length;
+  document.getElementById('stat-premium').textContent = premium;
+  document.getElementById('stat-faculties').textContent = allFaculties.length;
+  document.getElementById('stat-free').textContent = allUsers.filter(u => !u.isPremium && u.role !== 'admin').length;
+
+  const recent = allUsers.slice(0, 5);
+  document.getElementById('recent-users-list').innerHTML = recent.length ? `
+    <div class="data-table-wrap"><table class="data-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Usage</th></tr></thead>
+      <tbody>${recent.map(u => `
+        <tr>
+          <td>${u.displayName || '—'}</td>
+          <td style="color:var(--text2)">${u.email}</td>
+          <td>${roleBadge(u)}</td>
+          <td>${u.usageCount || 0}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>` : '<p style="color:var(--text3);font-size:13px">No users yet.</p>';
+}
+
+function roleBadge(u) {
+  if (u.role === 'admin') return '<span class="badge badge-red">Admin</span>';
+  if (u.isPremium) return '<span class="badge badge-gold">Premium</span>';
+  return '<span class="badge badge-purple">Free</span>';
+}
+
+// ── Users table ──
+function renderUsersTable(filtered) {
+  const users = filtered || allUsers;
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem">No users found</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => {
+    const fac = allFaculties.find(f => f.id === u.faculty);
+    return `<tr>
+      <td style="font-weight:500">${u.displayName || '—'}</td>
+      <td style="color:var(--text2);font-size:12px">${u.email}</td>
+      <td>${roleBadge(u)}</td>
+      <td style="font-size:12px;color:var(--text2)">${fac ? fac.name : '—'}</td>
+      <td>${u.usageCount || 0}</td>
+      <td style="font-size:11px;color:var(--text3)">${fmtDate(u.createdAt)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openUserModal('${u.id}')">Edit</button>
+          ${u.isPremium
+            ? `<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="setUserPremium('${u.id}',false)">Revoke</button>`
+            : `<button class="btn" style="font-size:11px;padding:4px 10px;border-color:rgba(245,158,11,.3);color:#fcd34d" onclick="setUserPremium('${u.id}',true)">⭐ Grant</button>`}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.filterUsers = () => {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  renderUsersTable(allUsers.filter(u =>
+    (u.displayName||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)
+  ));
+};
+
+window.setUserPremium = async (uid, val) => {
+  await updateDoc(doc(db, "users", uid), { isPremium: val });
+  const u = allUsers.find(u => u.id === uid);
+  if (u) u.isPremium = val;
+  renderUsersTable(); renderOverview();
+  showToast(val ? "Premium granted!" : "Premium revoked", val ? "success" : "info");
+};
+
+// ── User modal ──
+window.openUserModal = (uid) => {
+  const u = allUsers.find(u => u.id === uid);
+  if (!u) return;
+  const facs = allFaculties.map(f => `<option value="${f.id}"${f.id===u.faculty?' selected':''}>${f.name}</option>`).join('');
+  document.getElementById('user-modal-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff">${(u.displayName||u.email||'?')[0].toUpperCase()}</div>
+      <div>
+        <div style="font-weight:600">${u.displayName || '—'}</div>
+        <div style="font-size:12px;color:var(--text2)">${u.email}</div>
+      </div>
+    </div>
+    <div class="input-wrap"><label>Display Name</label><input type="text" id="um-name" value="${u.displayName||''}" /></div>
+    <div class="input-wrap"><label>Role</label>
+      <select id="um-role">
+        <option value="free"${u.role==='free'?' selected':''}>Free</option>
+        <option value="admin"${u.role==='admin'?' selected':''}>Admin</option>
+      </select>
+    </div>
+    <div class="input-wrap"><label>Faculty</label>
+      <select id="um-faculty"><option value="">— None —</option>${facs}</select>
+    </div>
+    <div class="input-wrap">
+      <div class="toggle-wrap">
+        <label class="toggle"><input type="checkbox" id="um-premium"${u.isPremium?' checked':''}><span class="toggle-slider"></span></label>
+        <span>Premium Account</span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveUserModal('${uid}')">Save Changes</button>`;
+  openModal('user-modal');
+};
+
+window.saveUserModal = async (uid) => {
+  const name    = document.getElementById('um-name').value.trim();
+  const role    = document.getElementById('um-role').value;
+  const faculty = document.getElementById('um-faculty').value;
+  const premium = document.getElementById('um-premium').checked;
+  await updateDoc(doc(db, "users", uid), { displayName: name, role, faculty, isPremium: premium });
+  const u = allUsers.find(u => u.id === uid);
+  if (u) Object.assign(u, { displayName: name, role, faculty, isPremium: premium });
+  renderUsersTable(); renderOverview();
+  closeModal('user-modal');
+  showToast("User updated!", "success");
+};
+
+// ── Faculties ──
+function renderFacultiesList() {
+  const el = document.getElementById('faculties-list');
+  if (!allFaculties.length) { el.innerHTML = '<p style="color:var(--text3);font-size:13px">No faculties yet. Click "+ Add Faculty" to create one.</p>'; return; }
+  el.innerHTML = allFaculties.map(f => `
+    <div class="form-panel" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+        <div>
+          <div class="form-panel-title" style="margin-bottom:2px">🏫 ${f.name}</div>
+          <div style="font-size:12px;color:var(--text3)">${f.code ? 'Code: ' + f.code + ' · ' : ''}${(f.subjects||[]).length} default subjects</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" style="font-size:12px;padding:6px 12px" onclick="openFacultyModal('${f.id}')">✏️ Edit</button>
+          <button class="btn btn-danger" style="font-size:12px;padding:6px 12px" onclick="confirmDelete('faculty','${f.id}','${f.name}')">🗑 Delete</button>
+        </div>
+      </div>
+      ${(f.subjects||[]).length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px">
+          ${f.subjects.map(s => `
+            <div class="card-sm" style="font-size:12px;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-weight:500">${s.name}</span>
+              <span style="color:var(--text3)">${s.credits} cr</span>
+            </div>`).join('')}
+        </div>` : '<p style="font-size:12px;color:var(--text3)">No default subjects</p>'}
+    </div>`).join('');
+}
+
+window.openFacultyModal = (facId) => {
+  editingFacId = facId || null;
+  const fac = facId ? allFaculties.find(f => f.id === facId) : null;
+  document.getElementById('fac-modal-title').textContent = fac ? 'Edit Faculty' : 'Add Faculty';
+  document.getElementById('fac-name').value = fac?.name || '';
+  document.getElementById('fac-code').value = fac?.code || '';
+  document.getElementById('fac-desc').value = fac?.description || '';
+  facSubjects = fac?.subjects ? [...fac.subjects] : [];
+  renderFacSubjects();
+  openModal('faculty-modal');
+};
+
+function renderFacSubjects() {
+  const el = document.getElementById('fac-subjects-list');
+  if (!facSubjects.length) {
+    el.innerHTML = '<p style="font-size:12px;color:var(--text3);margin-bottom:6px">No subjects yet. Click "+ Add Subject" below.</p>';
+    return;
+  }
+  // Use data-index attributes — NO oninput writing to module variable
+  // Values are read directly from DOM when saving
+  el.innerHTML = facSubjects.map((s, i) => `
+    <div class="subj-row" data-idx="${i}">
+      <input type="text" class="fac-subj-name" value="${(s.name||'').replace(/"/g,'&quot;')}" placeholder="Subject name e.g. Mathematics" />
+      <input type="number" class="fac-subj-credits" value="${s.credits||''}" placeholder="Credits" min="0" step="0.5" style="max-width:90px" />
+      <button class="btn btn-danger" style="padding:6px 10px;font-size:13px" onclick="removeFacSubj(${i})">✕</button>
+    </div>`).join('');
+}
+
+// Read all current subject rows from the DOM into facSubjects
+function flushFacSubjects() {
+  const rows = document.querySelectorAll('#fac-subjects-list .subj-row');
+  facSubjects = Array.from(rows).map(row => ({
+    name:    row.querySelector('.fac-subj-name')?.value.trim()   || '',
+    credits: row.querySelector('.fac-subj-credits')?.value.trim() || ''
+  }));
+}
+
+window.addFacSubj = () => {
+  flushFacSubjects();                          // save current typed values first
+  facSubjects.push({ name: '', credits: '' });
+  renderFacSubjects();
+  // Focus the new name input
+  const rows = document.querySelectorAll('#fac-subjects-list .subj-row');
+  if (rows.length) rows[rows.length - 1].querySelector('.fac-subj-name')?.focus();
+};
+
+window.removeFacSubj = (i) => {
+  flushFacSubjects();                          // save current typed values first
+  facSubjects.splice(i, 1);
+  renderFacSubjects();
+};
+
+window.saveFaculty = async () => {
+  flushFacSubjects();                          // read all typed values from DOM
+  const name = document.getElementById('fac-name').value.trim();
+  const code = document.getElementById('fac-code').value.trim();
+  const description = document.getElementById('fac-desc').value.trim();
+  if (!name) return showToast("Faculty name is required", "error");
+  const subjects = facSubjects.filter(s => s.name); // only keep rows with a name
+  const data = { name, code, description, subjects, updatedAt: serverTimestamp() };
+  try {
+    if (editingFacId) {
+      await updateDoc(doc(db, "faculties", editingFacId), data);
+      const f = allFaculties.find(f => f.id === editingFacId);
+      if (f) Object.assign(f, data);
+    } else {
+      const ref = await addDoc(collection(db, "faculties"), { ...data, createdAt: serverTimestamp() });
+      allFaculties.push({ id: ref.id, ...data });
+    }
+    renderFacultiesList(); renderOverview();
+    closeModal('faculty-modal');
+    showToast(editingFacId ? "Faculty updated!" : "Faculty created!", "success");
+  } catch (e) { showToast("Error: " + e.message, "error"); }
+};
+
+// ── Confirm delete ──
+window.confirmDelete = (type, id, name) => {
+  document.getElementById('confirm-msg').textContent = `Delete "${name}"? This cannot be undone.`;
+  document.getElementById('confirm-ok-btn').onclick = async () => {
+    if (type === 'faculty') {
+      await deleteDoc(doc(db, "faculties", id));
+      allFaculties = allFaculties.filter(f => f.id !== id);
+      renderFacultiesList(); renderOverview();
+    }
+    closeModal('confirm-modal');
+    showToast("Deleted successfully", "success");
+  };
+  openModal('confirm-modal');
+};
+
+// ── Modals ──
+window.openModal = id => document.getElementById(id).classList.add('show');
+window.closeModal = id => document.getElementById(id).classList.remove('show');
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); }));
+
+// ── Sign out ──
+window.signOut = async () => { await fbSignOut(auth); window.location.href = 'index.html'; };
+</script>
+</body>
+</html>

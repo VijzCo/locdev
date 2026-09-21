@@ -1,0 +1,25 @@
+﻿# Separate repos (cloned independently)
+/cargoflow/
+/dfs-qiotaa/
+/ontrack/
+/rw-prova/
+/dfs-erp/
+/dfs-ie/
+
+# Build/deps
+node_modules/
+.next/
+dist/
+out/
+vendor/
+android/app/build/
+ios/App/Pods/
+*.log
+Thumbs.db
+.DS_Store
+
+# Secrets
+.env*
+!.env.example
+*.jks
+*.keystore

@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Light theme — paper and steel. Used on desks and tablets. */
+  :root {
+    --canvas: 241 244 247;
+    --surface: 255 255 255;
+    --raised: 248 250 252;
+    --line: 213 221 230;
+    --ink: 7 21 34;
+    --muted: 91 112 133;
+    --faint: 138 153 168;
+    --accent: 18 48 71;
+    --accent-ink: 255 255 255;
+  }
+
+  /* Dark theme — the floor and the wall display. Deep navy, not black,
+     because pure black bleeds badly on the cheap panels factories mount. */
+  .dark {
+    --canvas: 4 16 27;
+    --surface: 7 21 34;
+    --raised: 12 32 51;
+    --line: 27 70 102;
+    --ink: 233 240 246;
+    --muted: 148 170 189;
+    --faint: 106 128 148;
+    --accent: 127 178 217;
+    --accent-ink: 4 16 27;
+  }
+
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: 'cv05' 1;
+  }
+
+  /* Every number in this application is tabular. Counters tick every few
+     seconds and digits must not shift the layout as they change. */
+  .tnum,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-canvas;
+  }
+
+  ::selection {
+    @apply bg-navy-600 text-white;
+  }
+}
+
+@layer components {
+  /* Signage labels. Condensed, spaced, uppercase — reads as factory
+     wayfinding rather than dashboard chrome. */
+  .eyebrow {
+    @apply font-display text-eyebrow uppercase tracking-[0.12em] text-muted;
+  }
+
+  /* The andon rail. A card's entire status is carried by its left edge so
+     it is legible from across a production floor. */
+  .andon {
+    @apply relative pl-4;
+  }
+
+  .andon::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-rail;
+    background: currentColor;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    @apply bg-line;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Wall display and label printing both need the app chrome gone. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

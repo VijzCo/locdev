@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duty Free Sourcing - Premium North Fashion Apparel from Lesotho</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #2d5a3d;
+            --accent: #c9a86a;
+            --light: #f5f3ed;
+            --white: #ffffff;
+            --text: #2a2a2a;
+            --border: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 3rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #2d5a3d 0%, #1a3a2d 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 255, 0.02) 10px,
+                    rgba(255, 255, 255, 0.02) 20px
+                );
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: var(--white);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+            display: block;
+            font-size: 3rem;
+            margin-top: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            max-width: 600px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(201, 168, 106, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            border-color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* About Section */
+        .about {
+            padding: 8rem 0;
+            background: var(--white);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+            animation: fadeInUp 0.8s ease-out both;
+        }
+
+        .section-tag {
+            font-size: 0.9rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: var(--primary);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            padding: 3rem 2rem;
+            background: var(--light);
+            border: 1px solid var(--border);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--accent);
+            transition: height 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 8rem 0;
+            background: var(--light);
+            position: relative;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .service-item {
+            background: var(--white);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            transition: height 0.3s ease;
+            z-index: 0;
+        }
+
+        .service-item:hover::after {
+            height: 100%;
+        }
+
+        .service-item:hover {
+            transform: scale(1.05);
+            border-color: var(--accent);
+        }
+
+        .service-item > * {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .service-item:hover > * {
+            color: var(--white);
+        }
+
+        .service-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .service-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .service-item p {
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .service-item:hover p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--primary);
+            padding: 6rem 0;
+            color: var(--white);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 4rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            animation: fadeInUp 0.8s ease-out both;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 8rem 0;
+            background: var(--white);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            margin-top: 4rem;
+            align-items: start;
+        }
+
+        .contact-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .contact-item {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--light);
+            border-left: 4px solid var(--accent);
+        }
+
+        .contact-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .contact-item p {
+            color: #666;
+        }
+
+        .contact-item a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-form {
+            background: var(--light);
+            padding: 3rem;
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            background: var(--white);
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 106, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-about h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .footer-about p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+        }
+
+        .footer-links h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero h1 span {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            nav ul {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            nav .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+
+        /* Scroll Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="logo">Duty Free <span>Sourcing</span></div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>
+                    Premium North Fashion
+                    <span>Sourced from the Heart of Lesotho</span>
+                </h1>
+                <p>
+                    Excellence in apparel manufacturing, combining traditional craftsmanship with modern production standards to deliver world-class garments.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#contact" class="btn btn-primary">Get in Touch</a>
+                    <a href="#services" class="btn btn-secondary">Our Services</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">About Us</div>
+                <h2 class="section-title">Leading Apparel Excellence</h2>
+                <p class="section-description">
+                    Duty Free Sourcing is Lesotho's premier apparel manufacturing company, specializing in North Fashion production with an unwavering commitment to quality, sustainability, and innovation.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">🏔️</div>
+                    <h3>Lesotho Heritage</h3>
+                    <p>Proudly based in the Kingdom in the Sky, we leverage our unique geographic position and skilled workforce to create exceptional apparel that meets international standards.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll" style="animation-delay: 0.1s">
+                    <div class="feature-icon">✂️</div>
+                    <h3>Expert Craftsmanship</h3>
+                    <p>Our team of experienced artisans and modern production specialists work together to ensure every garment meets the highest quality benchmarks.</p>
+                </div>
+
+                <div class="feature-card animate-on-scroll" style="animation-delay: 0.2s">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Global Standards</h3>
+                    <p>We adhere to international compliance and ethical manufacturing practices, ensuring our products are ready for markets worldwide.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Our Services</div>
+                <h2 class="section-title">What We Offer</h2>
+                <p class="section-description">
+                    Comprehensive apparel manufacturing solutions tailored to meet the demands of North Fashion markets.
+                </p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-item animate-on-scroll">
+                    <div class="service-number">01</div>
+                    <h3>Garment Manufacturing</h3>
+                    <p>Full-scale production of premium quality apparel including jackets, pants, sportswear, and fashion garments.</p>
+                </div>
+
+                <div class="service-item animate-on-scroll" style="animation-delay: 0.1s">
+                    <div class="service-number">02</div>
+                    <h3>Quality Control</h3>
+                    <p>Rigorous inspection processes ensuring every piece meets exacting standards before shipment.</p>
+                </div>
+
+                <div class="service-item animate-on-scroll" style="animation-delay: 0.2s">
+                    <div class="service-number">03</div>
+                    <h3>Design Consultation</h3>
+                    <p>Collaborative design services to bring your vision to life with expert technical guidance.</p>
+                </div>
+
+                <div class="service-item animate-on-scroll" style="animation-delay: 0.3s">
+                    <div class="service-number">04</div>
+                    <h3>Sourcing & Logistics</h3>
+                    <p>Efficient material sourcing and streamlined logistics for timely delivery to global destinations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item" style="animation-delay: 0s">
+                    <span class="stat-number">15+</span>
+                    <span class="stat-label">Years Experience</span>
+                </div>
+                <div class="stat-item" style="animation-delay: 0.1s">
+                    <span class="stat-number">500K+</span>
+                    <span class="stat-label">Garments Annually</span>
+                </div>
+                <div class="stat-item" style="animation-delay: 0.2s">
+                    <span class="stat-number">50+</span>
+                    <span class="stat-label">Global Partners</span>
+                </div>
+                <div class="stat-item" style="animation-delay: 0.3s">
+                    <span class="stat-number">99%</span>
+                    <span class="stat-label">Quality Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">Get in Touch</div>
+                <h2 class="section-title">Contact Us</h2>
+                <p class="section-description">
+                    Ready to partner with Lesotho's leading apparel manufacturer? Reach out to discuss your project.
+                </p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h3>Reach Out to Us</h3>
+                    
+                    <div class="contact-item">
+                        <h4>📍 Location</h4>
+                        <p>Maseru, Lesotho<br>Southern Africa</p>
+                    </div>
+
+                    <div class="contact-item">
+                        <h4>📧 Email</h4>
+                        <p><a href="mailto:info@dutyfreesourcing.ls">info@dutyfreesourcing.ls</a></p>
+                    </div>
+
+                    <div class="contact-item">
+                        <h4>📞 Phone</h4>
+                        <p><a href="tel:+26622000000">+266 2200 0000</a></p>
+                    </div>
+
+                    <div class="contact-item">
+                        <h4>🕒 Business Hours</h4>
+                        <p>Monday - Friday: 8:00 AM - 5:00 PM<br>Saturday: 9:00 AM - 1:00 PM</p>
+                    </div>
+                </div>
+
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="company">Company Name</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <h3>Duty Free Sourcing</h3>
+                    <p>
+                        Lesotho's premier apparel manufacturing company, dedicated to producing exceptional North Fashion garments with a commitment to quality, sustainability, and ethical practices.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#services">Manufacturing</a></li>
+                        <li><a href="#services">Quality Control</a></li>
+                        <li><a href="#services">Design</a></li>
+                        <li><a href="#services">Logistics</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Duty Free Sourcing - Lesotho. All rights reserved. | Crafted with pride in the Kingdom in the Sky.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Form submission handler
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+
+        // Active navigation state
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const sections = document.querySelectorAll('section');
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').slice(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

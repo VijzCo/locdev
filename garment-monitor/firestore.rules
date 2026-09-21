@@ -1,0 +1,228 @@
+rules_version = '2';
+
+// Garment Factory Production Monitoring System — Firestore security rules.
+//
+// Model: each user has a doc at /users/{uid} carrying:
+//   { role: "super_admin" | "factory_manager" | "supervisor" | "viewer",
+//     factories: [<factoryId>, ...] }
+//
+// Reads of operational data require sign-in. Writes are gated by role, and
+// (where the document carries a factoryId) by the user's assigned factories.
+// Super admins bypass the factory scope. These rules mirror the capability
+// matrix in src/lib/roles.js so the UI and the database agree.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers ---------------------------------------------------------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasProfile() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function role() {
+      return hasProfile() ? profile().role : "";
+    }
+
+    function isAdmin() {
+      return role() == "super_admin";
+    }
+
+    function isManager() {
+      return role() == "factory_manager";
+    }
+
+    function isSupervisor() {
+      return role() == "supervisor";
+    }
+
+    // Does the signed-in user have access to a given factoryId?
+    function inScope(factoryId) {
+      return isAdmin() ||
+        (hasProfile() && (profile().factories.hasAny([factoryId])));
+    }
+
+    // factoryId on the incoming write payload (new doc) or existing doc.
+    function writeFactory() {
+      return request.resource.data.factoryId;
+    }
+
+    // ---- users -----------------------------------------------------------
+    // A user can read their own profile; admins can read/write everyone.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ---- master data: factories / modules / styles / shifts / slots ------
+    // PUBLIC READ: the login-less /display board and /module tab read these
+    // without a signed-in user, so reads are open. (See the security note in
+    // README §11 — if you don't want production data world-readable, put these
+    // behind anonymous auth instead and change `if true` back to `signedIn()`.)
+    // Factories: only admins create/edit.
+    match /factories/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Modules & styles: writes gated client-side by capability (manage_modules /
+    // manage_styles) via the configurable-role system, so keep the rule to any
+    // signed-in user rather than the old admin/factory-manager-only check.
+    match /modules/{id} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+    match /styles/{id} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // Hierarchy masters. Read public (names appear on scoped screens); writes
+    // are gated client-side by capability — kept to signed-in users here since
+    // the configurable-role system is the source of truth for who can manage.
+    match /departments/{id} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+    match /sections/{id} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // Devices self-register via an unauthenticated heartbeat from public pages,
+    // so create/merge is open; that's why writes are not auth-gated. Admin
+    // management edits the same docs. (Low-risk presence data.)
+    match /devices/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Shifts & their slots: admins only (shift structure is system-wide).
+    match /shifts/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /shiftSlots/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- planning data: team allocation / daily plans --------------------
+    // Read public. Writes: admins/managers as before, PLUS a shape-validated
+    // public path so the /module tab can set a line's style + team size (which
+    // recomputes the target). Unauthenticated — see README §11 to lock down.
+    match /teamAllocations/{id} {
+      allow read: if true;
+      allow write: if isAdmin() ||
+        (isManager() && inScope(writeFactory())) ||
+        ( request.resource.data.keys().hasAll(['date','moduleId','teamCount']) &&
+          request.resource.data.teamCount is number &&
+          request.resource.data.teamCount >= 0 );
+    }
+    match /dailyPlans/{id} {
+      allow read: if true;
+      allow write: if isAdmin() ||
+        (isManager() && inScope(writeFactory())) ||
+        ( request.resource.data.keys().hasAll(['date','moduleId','shiftId','teamCount','dailyTarget']) &&
+          request.resource.data.teamCount is number &&
+          request.resource.data.teamCount >= 0 &&
+          request.resource.data.dailyTarget is number );
+    }
+
+    // ---- live production entries -----------------------------------------
+    // Read is public (display board). Writes: admins/managers/supervisors as
+    // before, PLUS a public path so the login-less /module tab on a floor
+    // phone can record output. The public write is shape-validated to limit
+    // abuse, but it is still unauthenticated — see README §11 to lock it down
+    // (anonymous auth or a write-token) if your URL is exposed beyond the LAN.
+    match /hourlyProduction/{id} {
+      allow read: if true;
+      allow write: if isAdmin() ||
+        ((isManager() || isSupervisor()) && inScope(writeFactory())) ||
+        ( // public floor-entry path
+          request.resource.data.keys().hasAll(['date','moduleId','slotId','actualQty']) &&
+          request.resource.data.actualQty is number &&
+          request.resource.data.actualQty >= 0 &&
+          request.resource.data.actualQty < 100000
+        );
+    }
+
+    // ---- reports & settings ----------------------------------------------
+    match /reports/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin() || isManager();
+    }
+    match /settings/{id} {
+      allow read: if true;            // public board reads QCO/blink config
+      allow write: if isAdmin();
+    }
+
+    // ---- roles & access (configurable RBAC) ------------------------------
+    // Any signed-in user may read role definitions (their session resolves its
+    // own capabilities); only Super Admins may change them.
+    match /roles/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Downtime & Andon ------------------------------------------------
+    // Config (categories/reasons/targets): read public, write signed-in
+    // (capability-gated client-side). Events: read public (dashboards/TV),
+    // create/update by signed-in users. Counters back the sequential refs.
+    match /downtimeCategories/{id} { allow read: if true; allow write: if signedIn(); }
+    match /downtimeReasons/{id}    { allow read: if true; allow write: if signedIn(); }
+    match /andonCategories/{id}    { allow read: if true; allow write: if signedIn(); }
+    match /andonReasons/{id}       { allow read: if true; allow write: if signedIn(); }
+    match /targets/{id}            { allow read: if true; allow write: if signedIn(); }
+    match /downtimes/{id} {
+      allow read: if true;
+      allow create: if signedIn() || (
+        request.resource.data.status == 'Raised' &&
+        request.resource.data.keys().hasAll(['ref','kind','factoryId','moduleId','categoryId','status','raisedAt'])
+      );
+      allow update: if signedIn() || (
+        request.resource.data.ref == resource.data.ref &&
+        request.resource.data.status in ['Attended', 'Completed', 'Verified']
+      );
+      allow delete: if signedIn();
+    }
+    match /andons/{id} {
+      allow read: if true;
+      allow create: if signedIn() || (
+        request.resource.data.status == 'Raised' &&
+        request.resource.data.keys().hasAll(['ref','kind','factoryId','moduleId','categoryId','status','raisedAt'])
+      );
+      allow update: if signedIn() || (
+        request.resource.data.ref == resource.data.ref &&
+        request.resource.data.status in ['Attended', 'Completed', 'Verified']
+      );
+      allow delete: if signedIn();
+    }
+    match /counters/{id}           { allow read: if true; allow write: if true; }
+    match /notifications/{id}      { allow read: if signedIn(); allow create: if true; allow update: if signedIn(); allow delete: if isAdmin(); }
+    match /dashboardLinks/{id}     { allow read: if true; allow write: if signedIn(); }
+
+    // ---- audit log -------------------------------------------------------
+    // Append-only. Any data writer may add an entry (the app logs one on every
+    // change, including the public module tab); entries are immutable. Reading
+    // the trail is limited to admins and factory managers.
+    match /auditLogs/{id} {
+      allow read: if isAdmin() || isManager();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Everything else is denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

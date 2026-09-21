@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public read collections (website)
+    match /company/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /leadership/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /factories/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /services/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Inquiries — anyone can CREATE (contact form), only admins can READ/DELETE
+    match /inquiries/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

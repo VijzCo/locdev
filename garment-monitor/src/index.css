@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background-color: #0F172A;
+  color: #F8FAFC;
+  font-family: "Barlow", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Slim dark scrollbars (desktop) */
+::-webkit-scrollbar { height: 10px; width: 10px; }
+::-webkit-scrollbar-track { background: #0F172A; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Sticky first column for the production board */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: #1E293B;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2
+           text-sm font-semibold transition active:scale-[.98] disabled:opacity-50;
+  }
+  .btn-primary { @apply btn bg-info text-white hover:bg-info/90; }
+  .btn-ghost   { @apply btn bg-grid/40 text-ink hover:bg-grid; }
+  .btn-danger  { @apply btn bg-bad/90 text-white hover:bg-bad; }
+  .field {
+    @apply w-full rounded-lg border border-grid bg-bg px-3 py-2 text-sm text-ink
+           outline-none placeholder:text-slate-500 focus:border-info;
+  }
+  .label { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400; }
+  .card  { @apply rounded-xl border border-grid bg-card; }
+  .pill  { @apply rounded-full px-2 py-0.5 text-[11px] font-semibold; }
+}
+
+/* Pulsing dot for the live indicator */
+@keyframes livepulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.live-dot { animation: livepulse 1.6s ease-in-out infinite; }
+
+/* QCO (change-over) attention cue: a SLOW fade out / fade in that keeps the
+   cell's own red/green colour. Duration is configurable via --qco-dur. */
+@keyframes qcofade { 0%, 100% { opacity: 1; } 50% { opacity: .30; } }
+.qco-fade { animation: qcofade var(--qco-dur, 2.6s) ease-in-out infinite; }
+.qco-tag  { animation: qcofade var(--qco-dur, 2.6s) ease-in-out infinite; }

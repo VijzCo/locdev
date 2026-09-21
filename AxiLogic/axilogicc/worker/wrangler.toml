@@ -1,0 +1,6 @@
+name = "axilogic-assistant"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+# The API key is a secret, never put it in this file.
+# Set it with:  wrangler secret put ANTHROPIC_API_KEY

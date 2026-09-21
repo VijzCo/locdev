@@ -1,0 +1,91 @@
+rules_version = '2';
+
+// AXILogic Firestore rules.
+//
+// The threat model: the website is public, the Firebase config is public, and
+// anyone can call the Firestore REST API directly with it. So these rules are
+// the ONLY thing standing between a stranger and your data. Nothing in the
+// browser code counts as security.
+//
+// Deploy with:  firebase deploy --only firestore:rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- who counts as an admin -------------------------------------
+    // Replace these with the UIDs from Firebase console -> Authentication.
+    // A UID allowlist is used rather than "any signed-in user" because if
+    // email sign-up is ever enabled by accident, any stranger with an
+    // account would otherwise be able to read every inquiry you hold.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid in [
+             'REPLACE_WITH_YOUR_ADMIN_UID'
+           ];
+    }
+
+    // ---- inquiries ---------------------------------------------------
+    // Anyone may create one. Nobody may read, edit or delete except an admin.
+    // This matters: inquiries hold names, email addresses and details of the
+    // sender's business. A public read rule would let anyone download your
+    // entire lead list, which is both a competitive loss and a data breach.
+    match /inquiries/{id} {
+
+      allow read, update, delete: if isAdmin();
+
+      allow create: if
+        // Exactly the expected fields, nothing more. Blocks a caller from
+        // stuffing megabytes of junk, or fields your UI would later render.
+        request.resource.data.keys().hasOnly([
+          'name','company','email','type','message','ref',
+          'createdAt','handled','source'
+        ])
+
+        // Every field present and correctly typed.
+        && request.resource.data.name is string
+        && request.resource.data.company is string
+        && request.resource.data.email is string
+        && request.resource.data.type is string
+        && request.resource.data.message is string
+        && request.resource.data.ref is string
+        && request.resource.data.source is string
+        && request.resource.data.handled == false
+
+        // Length caps, enforced server-side. The browser also checks these,
+        // but a direct REST call bypasses the browser entirely.
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.company.size() >= 2
+        && request.resource.data.company.size() <= 140
+        && request.resource.data.email.size() <= 200
+        && request.resource.data.type.size() <= 80
+        && request.resource.data.message.size() >= 12
+        && request.resource.data.message.size() <= 4000
+        && request.resource.data.ref.size() <= 40
+        && request.resource.data.source.size() <= 120
+
+        // Loose email shape check. Not a full validator, just a cheap filter.
+        && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$')
+
+        // Timestamp must come from the server, so it cannot be forged and
+        // cannot be used to hide an entry at the bottom of the list.
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // ---- site configuration -----------------------------------------
+    // Public read so visitors get the current copy. Admin write only.
+    match /config/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.size() < 40
+        && request.resource.data.updatedBy == request.auth.uid;
+    }
+
+    // ---- everything else --------------------------------------------
+    // Default deny. Any collection added later is locked until you write a
+    // rule for it deliberately, rather than being open by oversight.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

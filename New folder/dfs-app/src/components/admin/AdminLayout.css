@@ -1,0 +1,332 @@
+/* src/components/admin/AdminLayout.css */
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--gray-50);
+}
+
+.admin-main {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Admin page header */
+.admin-page-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-page-title h1 {
+  font-size: 22px;
+  color: var(--navy);
+}
+
+.admin-page-title p {
+  font-size: 13px;
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+
+/* Admin content */
+.admin-content {
+  padding: 28px 32px;
+}
+
+/* Admin card */
+.admin-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-card__header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  font-family: var(--font-body);
+}
+
+.admin-card__body { padding: 20px; }
+
+/* Admin stat cards */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.admin-stat-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-stat-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-stat-card__val {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1;
+}
+
+.admin-stat-card__label {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 3px;
+}
+
+/* Admin form */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Admin buttons */
+.btn-admin-primary {
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: var(--font-body);
+}
+
+.btn-admin-primary:hover { background: var(--navy-light); }
+
+.btn-admin-secondary {
+  background: transparent;
+  color: var(--gray-600);
+  border: 1.5px solid var(--gray-200);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font-body);
+}
+
+.btn-admin-secondary:hover { border-color: var(--navy); color: var(--navy); }
+
+.btn-admin-danger {
+  background: transparent;
+  color: var(--error);
+  border: 1.5px solid #fecaca;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font-body);
+}
+
+.btn-admin-danger:hover { background: #fef2f2; border-color: var(--error); }
+
+.btn-admin-edit {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--gray-200);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--font-body);
+}
+
+.btn-admin-edit:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Search */
+.admin-search {
+  position: relative;
+}
+
+.admin-search__input {
+  padding: 8px 12px 8px 36px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  width: 220px;
+  font-family: var(--font-body);
+  color: var(--gray-800);
+  transition: border-color .2s;
+}
+
+.admin-search__input:focus { border-color: var(--gold); }
+
+.admin-search__icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.modal__header h3 { font-size: 18px; }
+
+.modal__close {
+  background: transparent;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  transition: color .15s;
+}
+
+.modal__close:hover { color: var(--gray-800); }
+
+.modal__body { padding: 24px; }
+
+.modal__footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* Upload area */
+.upload-area {
+  border: 2px dashed var(--gray-200);
+  border-radius: 8px;
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.upload-area:hover, .upload-area--active {
+  border-color: var(--gold);
+  background: var(--gold-pale);
+}
+
+.upload-area p { font-size: 14px; color: var(--gray-600); margin-top: 8px; }
+.upload-area small { font-size: 12px; color: var(--gray-400); }
+
+/* Progress bar */
+.upload-progress {
+  height: 4px;
+  background: var(--gray-100);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.upload-progress__bar {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width .2s;
+}
+
+/* Table action buttons */
+.table-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Empty state */
+.admin-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-400);
+}
+
+.admin-empty h3 { color: var(--gray-600); font-size: 16px; margin-top: 12px; }
+.admin-empty p { font-size: 13px; margin-top: 6px; }
+
+@media (max-width: 768px) {
+  .admin-main { margin-left: 0; }
+  .admin-sidebar { display: none; }
+  .admin-content { padding: 20px 16px; }
+  .admin-stats { grid-template-columns: repeat(2, 1fr); }
+}

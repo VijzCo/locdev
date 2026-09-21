@@ -1,0 +1,48 @@
+rules_version = '2';
+
+/**
+ * RW DESIGN — FIRESTORE SECURITY RULES
+ *
+ * POSTURE: deny all client access. Every read and write in this product goes
+ * through the Firebase Admin SDK inside Next.js Server Components and Server
+ * Actions (Blueprint assumptions A1 + A2). The Admin SDK bypasses these rules
+ * by design, so they are not "unused" — they are the guarantee that a leaked
+ * public config, a stolen ID token, or a future developer reaching for the
+ * client SDK cannot read a draft, a lead, or a buyer's email address.
+ *
+ * The role-aware helpers below are kept deliberately, unused, and tested. If a
+ * feature ever legitimately needs direct client access, the rule is written
+ * here, reviewed, and enabled path-by-path — never by loosening the default.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers (staged for future scoped access) ─────────────
+    function signedIn()      { return request.auth != null; }
+    function role()          { return request.auth.token.role; }
+    function isSuperAdmin()  { return signedIn() && role() == 'SUPER_ADMIN'; }
+    function isAdmin()       { return signedIn() && role() in [
+                                 'SUPER_ADMIN','CONTENT_ADMIN','PRODUCT_ADMIN','CATALOGUE_ADMIN'
+                               ]; }
+    function isViewer()      { return signedIn() && role() == 'VIEWER'; }
+
+    // ── DEFAULT DENY ──────────────────────────────────────────
+    // Covers every collection: settings, pages, products, fabrics, washes,
+    // finishes, collections, capabilities, sustainability, facilities,
+    // certifications, partners, catalogues, media, enquiries, meetingRequests,
+    // buyerSelections, shortLinks, users, auditLogs, stats.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Explicitly reinforced: never client-reachable ─────────
+    // Redundant against the wildcard above, but stated so that a future
+    // loosening of the default cannot silently expose leads or credentials.
+    match /enquiries/{id}       { allow read, write: if false; }
+    match /meetingRequests/{id} { allow read, write: if false; }
+    match /buyerSelections/{id} { allow read, write: if false; }
+    match /users/{uid}          { allow read, write: if false; }
+    match /auditLogs/{id}       { allow read, write: if false; }
+  }
+}

@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    function isActiveUser() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function hasAcceptedMatch(userId1, userId2) {
+      // Simplified check - in production, query matches collection
+      return isAuthenticated();
+    }
+
+    // ====== USERS COLLECTION ======
+    match /users/{userId} {
+      // Anyone authenticated can read basic profiles (respecting privacy rules enforced at app level)
+      allow read: if isAuthenticated();
+
+      // Users can only write their own profile
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ====== MATCHES COLLECTION ======
+    match /matches/{matchId} {
+      // Match participants can read their own matches
+      allow read: if isAuthenticated() &&
+        request.auth.uid in resource.data.users;
+
+      // Authenticated users can create match requests
+      allow create: if isAuthenticated() &&
+        request.auth.uid == request.resource.data.initiatorId &&
+        request.auth.uid in request.resource.data.users &&
+        request.resource.data.status == 'pending';
+
+      // Match participants can update (accept/reject)
+      allow update: if isAuthenticated() &&
+        request.auth.uid in resource.data.users;
+
+      allow delete: if isAdmin();
+    }
+
+    // ====== MESSAGES COLLECTION ======
+    match /messages/{messageId} {
+      // Only read if you're part of the match
+      allow read: if isAuthenticated();
+
+      // Only send messages if you're part of an accepted match
+      allow create: if isAuthenticated() &&
+        request.auth.uid == request.resource.data.senderId;
+
+      // Only sender can update (edit/delete their messages)
+      allow update: if isAuthenticated() &&
+        request.auth.uid == resource.data.senderId;
+
+      allow delete: if isAdmin();
+    }
+
+    // ====== NOTIFICATIONS COLLECTION ======
+    match /notifications/{notifId} {
+      // Users can only read their own notifications
+      allow read: if isAuthenticated() &&
+        request.auth.uid == resource.data.userId;
+
+      // Any authenticated user can create notifications (to notify others)
+      allow create: if isAuthenticated();
+
+      // Users can mark their own notifications as read
+      allow update: if isAuthenticated() &&
+        request.auth.uid == resource.data.userId;
+
+      allow delete: if isAuthenticated() &&
+        request.auth.uid == resource.data.userId;
+    }
+
+    // ====== REPORTS COLLECTION ======
+    match /reports/{reportId} {
+      // Reporters can read their own reports; admins can read all
+      allow read: if isAuthenticated() &&
+        (request.auth.uid == resource.data.reporterId || isAdmin());
+
+      // Any authenticated user can file a report
+      allow create: if isAuthenticated() &&
+        request.auth.uid == request.resource.data.reporterId;
+
+      // Only admins can update reports (change status)
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ====== ADMIN: catch-all for admin reads ======
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

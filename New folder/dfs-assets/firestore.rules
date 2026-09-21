@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isAdmin() { return isSignedIn() && userDoc().role == 'admin'; }
+    function isStaff() { return isSignedIn() && userDoc().role in ['admin','staff']; }
+    function isViewer() { return isSignedIn() && userDoc().role in ['admin','staff','viewer']; }
+    function sameDept(f) { return userDoc().department == resource.data[f]; }
+
+    match /users/{userId} {
+      allow list: if true;
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAdmin() || !exists(/databases/$(database)/documents/users/$(userId));
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin() && request.auth.uid != userId;
+    }
+    match /assets/{id} {
+      allow read: if isViewer() && (isAdmin() || sameDept('department'));
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+    match /inventory/{id} {
+      allow read: if isViewer() && (isAdmin() || sameDept('department'));
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+    match /stockLogs/{id} {
+      allow read: if isViewer();
+      allow create: if isStaff();
+      allow update, delete: if isAdmin();
+    }
+    match /issuance/{id} {
+      allow read: if isViewer() && (isAdmin() || sameDept('recipientDept'));
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+    match /logs/{id} {
+      allow read: if isViewer();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

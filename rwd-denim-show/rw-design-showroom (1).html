@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RW Design — Digital Denim Showroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ TOKENS ═══════════════ */
+:root{
+--rw-void:#07131F;--rw-indigo:#183A63;--rw-denim:#315B82;--rw-washed:#7894A8;
+--rw-ecru:#F3F1EC;--rw-steel:#8C949B;--rw-selvedge:#C4462F;
+--thread:#D08A3C;--brass:#B08D57;--kraft:#D6C8AC;--leather:#7A4F2C;
+--surface:var(--rw-void);--ink:var(--rw-ecru);--ink-muted:var(--rw-washed);--ink-faint:var(--rw-steel);
+--line:rgba(243,241,236,.10);--line-strong:rgba(243,241,236,.22);--accent-edge:var(--rw-selvedge);
+--font-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+--font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+--gutter:clamp(18px,5vw,64px);--max:1440px;
+--dur-fast:170ms;--dur-base:320ms;--dur-slow:620ms;--ease-out:cubic-bezier(.16,1,.30,1);
+--twill:63deg;
+}
+@media (prefers-reduced-motion:reduce){:root{--dur-fast:1ms;--dur-base:1ms;--dur-slow:1ms}}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:#02070C;color:var(--ink);font-family:var(--font-display);
+ font-variation-settings:'wdth' 100,'wght' 400;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+canvas,img,svg{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+:focus-visible{outline:2px solid var(--accent-edge);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body::after{content:'';position:fixed;inset:0;z-index:95;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+.mono{font-family:var(--font-mono);font-size:clamp(.6rem,1.6vw,.7rem);letter-spacing:.12em;text-transform:uppercase}
+.h-film{font-size:clamp(2.5rem,10vw,9rem);line-height:.84;letter-spacing:-.04em;text-transform:uppercase;
+ font-variation-settings:'wdth' 118,'wght' 700}
+.h1{font-size:clamp(1.9rem,5.4vw,4.4rem);line-height:.94;letter-spacing:-.03em;text-transform:uppercase;
+ font-variation-settings:'wdth' 116,'wght' 700}
+.h3{font-size:clamp(1rem,1.8vw,1.4rem);letter-spacing:-.01em;font-variation-settings:'wdth' 106,'wght' 600}
+.lede{color:var(--ink-muted);max-width:58ch;font-size:clamp(.95rem,1.05vw,1.1rem)}
+.eyebrow{font-family:var(--font-mono);font-size:clamp(.6rem,1.6vw,.7rem);letter-spacing:.12em;text-transform:uppercase;
+ color:var(--ink-faint);display:flex;align-items:center;gap:11px}
+.eyebrow::before{content:'';width:22px;height:1px;background:var(--accent-edge);flex:none}
+
+/* ═══════════════ SKEUOMORPHIC MATERIALS ═══════════════ */
+.mat-denim{background:
+ repeating-linear-gradient(var(--twill),rgba(255,255,255,.055) 0 1px,transparent 1px 4px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.30) 0 2px,transparent 2px 6px),
+ linear-gradient(155deg,#20486e,#132a42 58%,#0b1a29)}
+.mat-metal{background:
+ repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),
+ linear-gradient(180deg,#2C333B,#191F26 42%,#0F141A);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.15),inset 0 -1px 0 rgba(0,0,0,.7),0 24px 44px -34px #000;
+ border:1px solid #090C10}
+.engraved{color:#98A2AC;text-shadow:0 1px 0 rgba(255,255,255,.09),0 -1px 0 rgba(0,0,0,.65)}
+.stitched{position:relative}
+.stitched::before{content:'';position:absolute;inset:9px;border:1.5px dashed var(--thread);opacity:.85;
+ border-radius:2px;pointer-events:none}
+.stitched::after{content:'';position:absolute;inset:13px;border:1.5px dashed var(--thread);opacity:.45;
+ border-radius:2px;pointer-events:none}
+.rivet{position:absolute;width:15px;height:15px;border-radius:50%;
+ background:radial-gradient(circle at 34% 28%,#F0E4CB,#C2A473 42%,#8A7145 72%,#42351F);
+ box-shadow:0 1px 3px rgba(0,0,0,.7),inset 0 -1px 1px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.5)}
+.grommet{width:22px;height:22px;border-radius:50%;
+ background:radial-gradient(circle at 34% 28%,#F4EFE6,#A8B0B8 44%,#666E76 72%,#252A30);
+ box-shadow:0 1px 3px rgba(0,0,0,.5);display:grid;place-items:center}
+.grommet::after{content:'';width:9px;height:9px;border-radius:50%;background:rgba(0,0,0,.72);
+ box-shadow:inset 0 1px 2px rgba(0,0,0,.9)}
+.patch{background:linear-gradient(168deg,#8E5E36,#6A4324 55%,#4E3018);border-radius:5px 5px 16px 16px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -2px 6px rgba(0,0,0,.45),0 12px 26px -16px #000;
+ padding:clamp(16px,3vw,26px);position:relative;overflow:hidden}
+.patch::before{content:'';position:absolute;inset:6px;border:1px dashed rgba(255,255,255,.16);border-radius:3px 3px 12px 12px}
+.patch__t{color:#2F1B0C;text-shadow:0 1px 0 rgba(255,255,255,.22),0 -1px 0 rgba(0,0,0,.45);
+ font-variation-settings:'wdth' 112,'wght' 700;text-transform:uppercase;letter-spacing:-.01em}
+
+/* ═══════════════ FIXED 3D LAYER ═══════════════ */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.glfb{position:fixed;inset:0;z-index:0;display:none;background:var(--fb,#07131f);
+ background-image:repeating-linear-gradient(var(--twill),rgba(243,241,236,.03) 0 1px,transparent 1px 5px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.3) 0 2px,transparent 2px 7px)}
+body[data-nogl="true"] #gl{display:none} body[data-nogl="true"] .glfb{display:block}
+.vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+ background:radial-gradient(115% 78% at 50% 45%,transparent 32%,rgba(2,7,12,.8) 100%)}
+/* transitions dip through black — never white. Down fast, up slow. */
+.fade{position:fixed;inset:0;z-index:70;background:#02070C;opacity:0;pointer-events:none;
+ transition:opacity 460ms cubic-bezier(.16,1,.30,1)}
+
+/* ═══════════════ INSTRUMENT HUD ═══════════════ */
+.hud{position:fixed;z-index:60;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.15em;
+ text-transform:uppercase;color:var(--ink-faint);pointer-events:none;transition:color var(--dur-base)}
+.hud--tl{top:14px;left:var(--gutter)} .hud--tr{top:14px;right:var(--gutter);text-align:right}
+.hud--bl{bottom:16px;left:var(--gutter);display:flex;gap:14px;align-items:center}
+@media(max-width:767px){.hud--tr,.hud--tl{display:none}}
+.led{width:6px;height:6px;border-radius:50%;background:#3A4650;box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+.led[data-on="true"]{background:var(--accent-edge);box-shadow:0 0 8px var(--accent-edge)}
+.bar{position:fixed;left:0;top:0;height:2px;background:var(--accent-edge);z-index:65;width:0}
+body[data-light="true"] .hud{color:#6B7783}
+.ticks{position:fixed;right:var(--gutter);top:50%;transform:translateY(-50%);z-index:60;display:none;flex-direction:column;gap:9px}
+@media(min-width:1024px){.ticks{display:flex}}
+.tick{width:20px;height:2px;background:var(--line-strong);transition:all var(--dur-fast)}
+.tick[data-on="true"]{background:var(--accent-edge);width:36px}
+
+/* ═══════════════ FILM SEGMENTS ═══════════════ */
+.film{position:relative;z-index:2;height:300svh;background:transparent}
+.film--short{height:190svh}
+@media(max-width:767px){.film{height:230svh}.film--short{height:150svh}}
+.film__type{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+ padding:0 var(--gutter) clamp(64px,12svh,120px);pointer-events:none}
+.film__inner{max-width:var(--max);margin-inline:auto;width:100%}
+.film__cta{margin-top:26px;pointer-events:auto;display:none}
+.film__type[data-final="true"] .film__cta{display:inline-flex}
+.bars{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity var(--dur-base)}
+.bars[data-on="true"]{opacity:1}
+.bars::before,.bars::after{content:'';position:absolute;left:0;right:0;height:clamp(22px,5svh,58px);background:#02070C}
+.bars::before{top:0}.bars::after{bottom:0}
+
+/* projected spec markers — tech layer over the physical object */
+.markers{position:fixed;inset:0;z-index:4;pointer-events:none;display:none}
+@media(min-width:1024px){.markers[data-on="true"]{display:block}}
+.marker{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:0}
+.marker__dot{width:7px;height:7px;border:1px solid var(--accent-edge);border-radius:50%;flex:none;
+ box-shadow:0 0 0 4px rgba(196,70,47,.14)}
+.marker__line{width:clamp(28px,5vw,64px);height:1px;background:var(--line-strong)}
+.marker__tag{font-family:var(--font-mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;
+ color:var(--ink-muted);border:1px solid var(--line);background:rgba(7,19,31,.72);backdrop-filter:blur(6px);
+ padding:5px 9px;white-space:nowrap}
+.marker__tag b{color:var(--ink);font-weight:500}
+
+/* ═══════════════ BUTTONS ═══════════════ */
+.btn{display:inline-flex;align-items:center;gap:11px;border-radius:999px;padding:13px 26px;min-height:48px;
+ font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+ transition:all var(--dur-base) var(--ease-out)}
+.btn--primary{background:var(--rw-ecru);color:var(--rw-void);
+ box-shadow:inset 0 -2px 0 rgba(7,19,31,.18),0 8px 20px -12px rgba(0,0,0,.9)}
+.btn--primary:hover{transform:translateY(-2px)}
+.btn--ghost{border:1px solid var(--line-strong)} .btn--ghost:hover{border-color:var(--accent-edge)}
+.btn--dark{background:var(--rw-void);color:var(--rw-ecru);box-shadow:0 8px 20px -14px rgba(7,19,31,.9)}
+.btn--metal{background:linear-gradient(180deg,#333B44,#1C222A);border:1px solid #0B0F13;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.6)}
+
+/* ═══════════════ CONTENT SECTIONS ═══════════════ */
+.sec{position:relative;z-index:2;background:var(--surface);padding-block:clamp(80px,11vw,150px)}
+.sec--light{background:var(--rw-ecru);color:var(--rw-void)}
+.sec--light .lede{color:#4A5560}.sec--light .eyebrow{color:#6B7783}
+.sec--light::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-edge)}
+
+/* — statement: denim panel with patch, rivets, stitching — */
+.panel-denim{position:relative;padding:clamp(28px,5vw,64px);overflow:hidden;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 30px 60px -40px #000}
+.panel-denim .rivet:nth-of-type(1){top:14px;left:14px}
+.panel-denim .rivet:nth-of-type(2){top:14px;right:14px}
+.panel-denim .rivet:nth-of-type(3){bottom:14px;left:14px}
+.panel-denim .rivet:nth-of-type(4){bottom:14px;right:14px}
+.statement{display:grid;gap:clamp(26px,4vw,56px);align-items:center}
+@media(min-width:900px){.statement{grid-template-columns:1fr auto}}
+.quote p{font-size:clamp(1.5rem,3.4vw,2.8rem);line-height:1.05;letter-spacing:-.025em;text-transform:uppercase;
+ font-variation-settings:'wdth' 110,'wght' 600}
+.quote p+p{color:var(--ink-muted)}
+.patch{max-width:280px;width:100%;justify-self:start}
+@media(min-width:900px){.patch{justify-self:end;transform:rotate(-2deg)}}
+
+/* — light box: shade card table — */
+.lightbox{position:relative;margin-top:clamp(30px,5vw,56px);padding:clamp(16px,3vw,34px);
+ background:radial-gradient(120% 90% at 50% 0%,#FFFFFF,#EDE9E0 70%,#E2DCD0);
+ box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(7,19,31,.07),0 30px 60px -46px rgba(7,19,31,.6)}
+.cards{display:grid;gap:clamp(12px,1.8vw,24px);grid-template-columns:repeat(2,1fr)}
+@media(min-width:640px){.cards{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1200px){.cards{grid-template-columns:repeat(6,1fr)}}
+.card{position:relative;background:#FFFDF8;padding:9px 9px 0;text-align:left;width:100%;display:block;
+ box-shadow:0 1px 0 rgba(7,19,31,.14),0 12px 22px -18px rgba(7,19,31,.55);
+ transition:transform var(--dur-base) var(--ease-out),box-shadow var(--dur-base)}
+.card:hover,.card:focus-visible,.card.is-open{transform:translateY(-7px) rotate(-.6deg);
+ box-shadow:0 1px 0 rgba(7,19,31,.14),0 26px 38px -24px rgba(7,19,31,.6)}
+.card__punch{position:absolute;top:13px;left:13px;width:14px;height:14px;border-radius:50%;background:#EDE9E0;
+ box-shadow:inset 0 2px 3px rgba(7,19,31,.4);z-index:3}
+.card__staple{position:absolute;top:15px;right:13px;width:13px;height:3px;background:#98A2AC;transform:rotate(-24deg);
+ box-shadow:0 1px 1px rgba(0,0,0,.35);z-index:3}
+.card__cloth{aspect-ratio:1;background:var(--sw,#1b3d63);position:relative;overflow:hidden;
+ box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.card__cloth::after{content:'';position:absolute;inset:0;
+ background:repeating-linear-gradient(var(--twill),rgba(255,255,255,.06) 0 1px,transparent 1px 4px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.26) 0 2px,transparent 2px 6px)}
+.card__peel{position:absolute;right:0;bottom:0;width:0;height:0;border-style:solid;
+ border-width:0 0 0 0;border-color:transparent transparent #EFEAE0 transparent;
+ filter:drop-shadow(-2px -2px 4px rgba(7,19,31,.28));transition:border-width var(--dur-base) var(--ease-out);z-index:2}
+.card:hover .card__peel,.card.is-open .card__peel{border-width:0 0 44px 44px}
+.card__spec{padding:10px 3px 12px}
+.card__name{font-size:.78rem;text-transform:uppercase;font-variation-settings:'wdth' 108,'wght' 700;letter-spacing:-.01em}
+.card__row{display:flex;justify-content:space-between;gap:5px;font-family:var(--font-mono);font-size:.55rem;
+ letter-spacing:.05em;text-transform:uppercase;color:#6B7783;margin-top:5px;border-top:1px solid rgba(7,19,31,.1);padding-top:4px}
+.card__row span:last-child{color:var(--rw-void)}
+
+/* — configurator: machined control panel — */
+.config{position:relative;z-index:2;height:220svh;background:transparent}
+@media(max-width:767px){.config{height:170svh}}
+.config__stick{position:sticky;top:0;height:100svh;display:flex;align-items:flex-end;padding:0 var(--gutter) clamp(24px,5svh,56px)}
+.console{width:100%;max-width:var(--max);margin-inline:auto;padding:clamp(14px,2vw,22px);
+ display:grid;gap:clamp(12px,2vw,22px);pointer-events:auto}
+@media(min-width:900px){.console{grid-template-columns:1fr auto;align-items:center}}
+.console__label{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.chips{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:9px;padding:11px 15px;min-height:46px;border-radius:3px;
+ background:linear-gradient(180deg,#2A313A,#171D24);border:1px solid #0A0E12;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(0,0,0,.6);
+ font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#98A2AC;
+ transition:all var(--dur-fast)}
+.chip[aria-pressed="true"]{color:var(--rw-ecru);border-color:var(--accent-edge);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 1px rgba(196,70,47,.35)}
+.chip__sw{width:16px;height:16px;background:var(--sw);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)}
+.readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#0A0E12;min-width:min(100%,300px)}
+@media(min-width:480px){.readout{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.readout__cell{background:linear-gradient(180deg,#161C23,#0D1218);padding:10px 12px}
+.readout__k{font-family:var(--font-mono);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:#5F6B76}
+.readout__v{font-family:var(--font-mono);font-size:.82rem;letter-spacing:.04em;color:var(--rw-ecru);margin-top:3px;
+ text-shadow:0 0 10px rgba(120,148,168,.35)}
+
+/* — hang tags — */
+.rail{display:grid;gap:clamp(16px,2.4vw,30px);grid-template-columns:repeat(2,1fr);margin-top:clamp(30px,4vw,52px)}
+@media(min-width:900px){.rail{grid-template-columns:repeat(3,1fr)}}
+.tag{position:relative;padding-top:34px}
+.tag__string{position:absolute;top:0;left:50%;width:2px;height:34px;background:linear-gradient(#8C949B,#5A6067);
+ transform:translateX(-50%) rotate(2deg);transform-origin:top}
+.tag__body{position:relative;background:linear-gradient(168deg,#E2D6BC,#CFC0A0 60%,#C2B394);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 16px 30px -22px rgba(0,0,0,.9);
+ padding:34px clamp(14px,2vw,20px) clamp(14px,2vw,20px);color:#2E2415;
+ clip-path:polygon(0 14px,14px 0,100% 0,100% 100%,0 100%);
+ transition:transform var(--dur-base) var(--ease-out)}
+.tag:hover .tag__body{transform:rotate(-1deg) translateY(-4px)}
+.tag .grommet{position:absolute;top:9px;left:50%;transform:translateX(-50%)}
+.tag__img{aspect-ratio:3/4;background:
+ repeating-linear-gradient(var(--twill),rgba(255,255,255,.05) 0 1px,transparent 1px 4px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.24) 0 2px,transparent 2px 6px),
+ linear-gradient(150deg,var(--sw,#1b3d63),#0c1d2f);display:grid;place-items:center;
+ box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)}
+.tag__img span{font-family:var(--font-mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;
+ color:rgba(243,241,236,.45);text-align:center;padding:0 10px;line-height:1.7}
+.tag__name{font-size:.92rem;text-transform:uppercase;font-variation-settings:'wdth' 108,'wght' 700;margin-top:13px}
+.tag__row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.55rem;
+ letter-spacing:.06em;text-transform:uppercase;color:#6B5B44;margin-top:6px;border-top:1px dashed rgba(46,36,21,.3);padding-top:5px}
+.tag__row span:last-child{color:#2E2415}
+.tag__add{width:100%;margin-top:12px;min-height:44px;border-radius:999px;
+ background:linear-gradient(180deg,#3B2E1B,#241B0F);color:#E2D6BC;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+ font-family:var(--font-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;
+ display:flex;align-items:center;justify-content:center;gap:8px;transition:all var(--dur-fast)}
+.tag__add[aria-pressed="true"]{background:linear-gradient(180deg,#C4462F,#8E3020);color:#fff}
+
+/* — reel — */
+.reel{position:relative;z-index:2;height:min(88svh,720px);overflow:hidden;background:#02070C}
+#reelCanvas{position:absolute;inset:0;width:100%;height:100%}
+.reel__grade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,7,12,.5),transparent 34%,rgba(2,7,12,.88))}
+.reel__inner{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:space-between;
+ padding:clamp(26px,6svh,58px) var(--gutter);max-width:var(--max);margin-inline:auto}
+.reel__tag{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent-edge);border-radius:999px;
+ padding:5px 11px;font-family:var(--font-mono);font-size:.55rem;letter-spacing:.11em;text-transform:uppercase}
+
+/* — closing plate — */
+.plate{position:relative;z-index:2;margin:0 var(--gutter);padding:clamp(56px,11vw,120px) clamp(20px,5vw,60px);
+ text-align:center;max-width:var(--max);margin-inline:auto}
+.plate .rivet:nth-of-type(1){top:16px;left:16px}.plate .rivet:nth-of-type(2){top:16px;right:16px}
+.plate .rivet:nth-of-type(3){bottom:16px;left:16px}.plate .rivet:nth-of-type(4){bottom:16px;right:16px}
+.footer{position:relative;z-index:2;background:var(--surface);border-top:1px solid var(--line);
+ padding-block:clamp(34px,5vw,64px);color:var(--ink-faint)}
+
+/* — nav — */
+.nav{position:fixed;top:0;left:0;right:0;z-index:62;display:flex;align-items:center;justify-content:space-between;
+ padding:12px var(--gutter);transition:background var(--dur-base),border-color var(--dur-base)}
+.nav[data-solid="true"]{background:rgba(7,19,31,.84);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+body[data-light="true"] .nav[data-solid="true"]{background:rgba(243,241,236,.9);border-bottom-color:rgba(7,19,31,.12);color:var(--rw-void)}
+.nav__logo{font-size:.86rem;letter-spacing:.24em;font-variation-settings:'wdth' 112,'wght' 700}
+.nav__links{display:none;gap:26px}@media(min-width:1100px){.nav__links{display:flex}}
+.nav__link{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.11em;text-transform:uppercase;
+ opacity:.7;padding-block:5px;border-bottom:2px solid transparent}
+.nav__link:hover{opacity:1;border-bottom-color:var(--accent-edge)}
+.pill{display:none;align-items:center;gap:8px;border-radius:999px;padding:9px 15px;min-height:44px;
+ border:1px solid var(--line-strong);font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+.pill[data-on="true"]{display:inline-flex;border-color:var(--accent-edge)}
+.pill__n{background:var(--rw-ecru);color:var(--rw-void);border-radius:999px;min-width:19px;height:19px;
+ display:grid;place-items:center;font-size:.62rem}
+body[data-light="true"] .pill__n{background:var(--rw-void);color:var(--rw-ecru)}
+
+/* — drawer: tags on a rail — */
+.scrim{position:fixed;inset:0;z-index:75;background:rgba(2,7,12,.74);backdrop-filter:blur(3px);
+ opacity:0;visibility:hidden;transition:all var(--dur-base)}
+.scrim[data-open="true"]{opacity:1;visibility:visible}
+.drawer{position:fixed;z-index:80;display:flex;flex-direction:column;transition:transform var(--dur-slow) var(--ease-out);
+ inset:auto 0 0 0;max-height:88svh;transform:translateY(101%);border-top:2px solid var(--accent-edge)}
+@media(min-width:800px){.drawer{inset:0 0 0 auto;width:min(430px,94vw);max-height:none;transform:translateX(101%);
+ border-top:0;border-left:2px solid var(--accent-edge)}}
+.drawer[data-open="true"]{transform:none}
+.drawer__head{display:flex;justify-content:space-between;align-items:center;gap:14px;
+ padding:18px var(--gutter);border-bottom:1px solid rgba(0,0,0,.5)}
+.drawer__body{flex:1;overflow-y:auto;padding:6px var(--gutter) 20px}
+.drawer__foot{padding:16px var(--gutter);border-top:1px solid rgba(0,0,0,.5);display:grid;gap:10px}
+.dline{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px dashed rgba(243,241,236,.14)}
+.dline__sw{width:40px;height:52px;flex:none;background:var(--sw,#1b3d63);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+.dline__x{margin-left:auto;font-family:var(--font-mono);font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;
+ color:var(--ink-faint);padding:9px}
+.dline__x:hover{color:var(--accent-edge)}
+.empty{padding:44px 0;color:var(--ink-muted);font-size:.88rem;line-height:1.7}
+
+[data-reveal]{opacity:0;transform:translateY(18px);transition:opacity 800ms var(--ease-out),transform 800ms var(--ease-out)}
+[data-reveal].in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body data-nogl="false" data-light="false">
+
+<a href="#table" class="sr">Skip the opening film</a>
+
+<canvas id="gl"></canvas>
+<div class="glfb" id="glfb"></div>
+<div class="vig"></div>
+<div class="bars" id="bars" data-on="true"></div>
+<div class="markers" id="markers" data-on="false"></div>
+<div class="fade" id="fade"></div>
+<div class="bar" id="progress"></div>
+
+<!-- HUD -->
+<p class="hud hud--tl" id="hudL">RW DESIGN · DIGITAL SHOWROOM</p>
+<p class="hud hud--tr" id="hudR">TIER — · — FPS</p>
+<div class="hud hud--bl"><span class="led" id="led" data-on="true"></span><span id="hudTC">00:00 · ACT 01</span></div>
+<div class="ticks" id="ticks"></div>
+
+<nav class="nav" id="nav" data-solid="false" aria-label="Main">
+  <a class="nav__logo" href="#top">RW DESIGN</a>
+  <ul class="nav__links">
+    <li><a class="nav__link" href="#table">Denim</a></li>
+    <li><a class="nav__link" href="#config">Wash</a></li>
+    <li><a class="nav__link" href="#products">Collections</a></li>
+    <li><a class="nav__link" href="#reel">Manufacturing</a></li>
+  </ul>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="pill" id="pill" data-on="false" aria-haspopup="dialog">Selection <span class="pill__n" id="pillN">0</span></button>
+    <a class="btn btn--primary" href="#closing" style="padding:11px 20px">Let's create <span>→</span></a>
+  </div>
+</nav>
+
+<!-- ══ FILM I — acts 0,1,2 ══ -->
+<section class="film" id="top" data-film data-acts="0,1,2" aria-label="Opening film">
+  <div class="film__type" id="type1">
+    <div class="film__inner">
+      <p class="eyebrow" data-t="eyebrow" style="margin-bottom:16px"></p>
+      <h1 class="h-film" data-t="title"></h1>
+      <p class="mono" data-t="spec" style="color:var(--ink-muted);margin-top:16px"></p>
+      <a class="btn btn--primary film__cta" href="#statement">Enter the showroom <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATEMENT — denim panel, leather patch, rivets ══ -->
+<section class="sec" id="statement">
+  <div class="wrap">
+    <div class="panel-denim mat-denim stitched" data-reveal>
+      <span class="rivet"></span><span class="rivet"></span><span class="rivet"></span><span class="rivet"></span>
+      <div class="statement">
+        <div>
+          <p class="eyebrow" style="margin-bottom:22px">01 — Who we are</p>
+          <div class="quote"><p>Built around denim.</p><p>Designed around possibility.</p></div>
+          <p class="lede" style="margin-top:22px">A development-led denim house. Fabric, wash, finish and production under one roof — so what leaves the floor is what was drawn on the first page.</p>
+        </div>
+        <div class="patch">
+          <p class="patch__t" style="font-size:1.5rem;line-height:1">RW<br>DESIGN</p>
+          <p class="patch__t mono" style="margin-top:12px;font-size:.55rem">EST. — · LOT 001</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FILM II — cut back in, act 3 ══ -->
+<section class="film film--short" data-film data-acts="3" aria-hidden="true">
+  <div class="film__type" id="type2"><div class="film__inner">
+    <p class="eyebrow" data-t="eyebrow" style="margin-bottom:16px"></p>
+    <h2 class="h-film" data-t="title"></h2>
+    <p class="mono" data-t="spec" style="color:var(--ink-muted);margin-top:16px"></p>
+  </div></div>
+</section>
+
+<!-- ══ THE FLIP — light box, shade cards ══ -->
+<section class="sec sec--light" id="table">
+  <div class="wrap">
+    <div data-reveal>
+      <p class="eyebrow" style="margin-bottom:18px">02 — Denim library</p>
+      <h2 class="h1">Now Touch<br>The Cloth.</h2>
+      <p class="lede" style="margin-top:20px">The film goes dark so the fabric can go light. Tap a card to lift the corner and read the reverse.</p>
+    </div>
+    <div class="lightbox" data-reveal><div class="cards" id="cards"></div></div>
+  </div>
+</section>
+
+<!-- ══ FILM III — cut, act 4 ══ -->
+<section class="film film--short" data-film data-acts="4" aria-hidden="true">
+  <div class="film__type" id="type3"><div class="film__inner">
+    <p class="eyebrow" data-t="eyebrow" style="margin-bottom:16px"></p>
+    <h2 class="h-film" data-t="title"></h2>
+    <p class="mono" data-t="spec" style="color:var(--ink-muted);margin-top:16px"></p>
+  </div></div>
+</section>
+
+<!-- ══ CONFIGURATOR — machined console over the live form ══ -->
+<section class="config" id="config" data-film data-acts="5" data-markers="true">
+  <div class="config__stick">
+    <div class="console mat-metal">
+      <div>
+        <div class="console__label">
+          <span class="led" data-on="true"></span>
+          <span class="mono engraved">Wash development console · Live</span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Select a wash"></div>
+      </div>
+      <div class="readout" id="readout"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCTS — hang tags ══ -->
+<section class="sec" id="products">
+  <div class="wrap">
+    <div data-reveal>
+      <p class="eyebrow" style="margin-bottom:18px">04 — On the rail</p>
+      <h2 class="h1">Styles You<br>Can Take.</h2>
+      <p class="lede" style="margin-top:20px">Clip a tag to your selection. No account, no cart — it travels with you to the enquiry.</p>
+    </div>
+    <div class="rail" id="rail" data-reveal></div>
+  </div>
+</section>
+
+<!-- ══ REEL ══ -->
+<section class="reel" id="reel">
+  <canvas id="reelCanvas"></canvas>
+  <div class="reel__grade"></div>
+  <div class="reel__inner">
+    <div><span class="reel__tag"><span class="led" data-on="true"></span>Placeholder film · 1920×1080 · H.264</span></div>
+    <div>
+      <h2 class="h1">Where ideas<br>become garments.</h2>
+      <p class="lede" style="margin-top:16px">Facility film drops in here — muted, looped, poster-first, and never autoplaying on a slow connection.</p>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap">
+        <button class="btn btn--metal" id="reelToggle" aria-pressed="true">Pause film</button>
+        <span class="mono" style="color:var(--ink-faint)" id="reelTime">00:00</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CLOSING PLATE ══ -->
+<section class="sec" id="closing" style="padding-block:clamp(60px,9vw,110px)">
+  <div class="plate mat-metal" data-reveal>
+    <span class="rivet"></span><span class="rivet"></span><span class="rivet"></span><span class="rivet"></span>
+    <p class="mono engraved" id="closeNote" style="margin-bottom:16px;min-height:1.2em"></p>
+    <h2 class="h1" style="margin-bottom:28px">Let's create<br>together.</h2>
+    <a class="btn btn--primary" href="#closing" id="closeCta">Start the conversation <span>→</span></a>
+  </div>
+</section>
+
+<footer class="footer"><div class="wrap mono">© 2026 RW Design — all content placeholder · Combined prototype</div></footer>
+
+<!-- ══ DRAWER ══ -->
+<div class="scrim" id="scrim" data-open="false"></div>
+<aside class="drawer mat-metal" id="drawer" data-open="false" role="dialog" aria-modal="true" aria-label="My selection">
+  <div class="drawer__head">
+    <div><h3 class="h3">My selection</h3><p class="mono" id="dCount" style="color:var(--ink-faint);margin-top:3px">0 styles</p></div>
+    <button class="btn btn--ghost" id="dClose" style="padding:9px 16px">Close</button>
+  </div>
+  <div class="drawer__body" id="dBody"></div>
+  <div class="drawer__foot">
+    <a class="btn btn--primary" href="#closing" id="dSend" style="justify-content:center">Send your selection <span>→</span></a>
+    <p class="mono" style="text-align:center;color:var(--ink-faint)">No account needed</p>
+  </div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ═══════════ ACT SHEET — every value is a CMS field in production ═══════════ */
+const ACTS=[
+ {id:'01',eyebrow:'Denim Show 2026',title:'DENIM\nREIMAGINED.',spec:'RW DESIGN · DIGITAL SHOWROOM',
+  mode:'weave',cam:[0,1.10,3.40],camTo:[0,1.10,2.70],look:[0,1.10,0],bg:0x02070C,fb:'#02070C',cloth:0x16304F,rough:.96,key:.6,rimC:0x315B82,rim:1.6,rot:0,rotTo:0,bars:true},
+ {id:'02',eyebrow:'01 — Fabric',title:'THE\nWEAVE.',spec:'14.2 OZ · RIGHT-HAND TWILL · 100% COTTON',
+  mode:'weave',cam:[-.35,1.22,.95],camTo:[.35,1.00,.72],look:[0,1.10,0],bg:0x050D16,fb:'#050D16',cloth:0x1B3D63,rough:.92,key:1.2,rimC:0x7894A8,rim:2.2,rot:0,rotTo:0,cut:true,bars:true},
+ {id:'03',eyebrow:'02 — The figure',title:'RAW\nINDIGO.',spec:'RW-F-014 · RIGID · UNWASHED · 14.2 OZ',
+  mode:'form',cam:[1.70,1.45,2.70],camTo:[-1.00,1.20,3.00],look:[0,1.10,0],bg:0x07131F,fb:'#07131F',cloth:0x152F4E,rough:.95,key:1.4,rimC:0x315B82,rim:2.6,rot:-.45,rotTo:.55,cut:true,bars:true,final:true},
+ {id:'04',eyebrow:'03 — Wash',title:'STONE.\nRINSE.',spec:'RW-W-021 · 45 MIN · WATER LOGGED PER STYLE',
+  mode:'form',cam:[-.85,.72,1.90],camTo:[.75,.98,2.20],look:[0,1.00,0],bg:0x1A2733,fb:'#1A2733',cloth:0x6E90AE,rough:.82,key:2.1,rimC:0xF3F1EC,rim:1.5,rot:.30,rotTo:-.35,cut:true,bars:true},
+ {id:'05',eyebrow:'04 — Finish',title:'BLACK\nPOWER.',spec:'RW-F-068 · COATED · HIGH STRETCH',
+  mode:'form',cam:[1.00,1.72,2.00],camTo:[1.30,1.05,2.40],look:[0,1.20,0],bg:0x04080D,fb:'#04080D',cloth:0x14191F,rough:.55,key:1.15,rimC:0xC4462F,rim:3.4,rot:-.20,rotTo:.40,cut:true,bars:true},
+ {id:'06',eyebrow:'05 — Development',title:'',spec:'',
+  mode:'form',cam:[.20,1.30,3.30],camTo:[-.20,1.24,3.00],look:[0,1.05,0],bg:0x08141F,fb:'#08141F',cloth:0x1B3D63,rough:.9,key:1.7,rimC:0x7894A8,rim:2.0,rot:-.55,rotTo:.55,cut:true,bars:false,live:true},
+];
+const FABRICS=[
+ {n:'Raw Selvedge',lot:'RW-F-014',hex:'#1B3D63',three:0x1B3D63,w:'14.2 oz',c:'100% Ctn',s:'Rigid',r:.95},
+ {n:'Dark Indigo', lot:'RW-F-021',hex:'#16304F',three:0x16304F,w:'12.0 oz',c:'98/2 Ctn·El',s:'Comfort',r:.92},
+ {n:'Mid Blue',    lot:'RW-F-033',hex:'#2E5B85',three:0x2E5B85,w:'11.5 oz',c:'99/1 Ctn·El',s:'Comfort',r:.88},
+ {n:'Light Wash',  lot:'RW-F-047',hex:'#5C7F9E',three:0x6E90AE,w:'9.4 oz', c:'100% Ctn',s:'Rigid',r:.8},
+ {n:'Vintage Cast',lot:'RW-F-052',hex:'#3A5A76',three:0x3A5A76,w:'13.0 oz',c:'100% Ctn',s:'Rigid',r:.9},
+ {n:'Black Power', lot:'RW-F-068',hex:'#131A21',three:0x14191F,w:'10.8 oz',c:'92/6/2',s:'High',r:.55},
+];
+const PRODUCTS=[
+ {id:'p1',n:'Straight 501 Cut',code:'RW-M-1042',cat:"Men's · Jeans",f:0,hex:'#1B3D63'},
+ {id:'p2',n:'Type III Jacket', code:'RW-M-2087',cat:"Men's · Jackets",f:4,hex:'#3A5A76'},
+ {id:'p3',n:'High Rise Slim',  code:'RW-W-3311',cat:"Women's · Jeans",f:1,hex:'#16304F'},
+ {id:'p4',n:'Utility Overshirt',code:'RW-M-4120',cat:"Men's · Shirts",f:2,hex:'#2E5B85'},
+ {id:'p5',n:'Wide Leg Crop',   code:'RW-W-5209',cat:"Women's · Jeans",f:3,hex:'#5C7F9E'},
+ {id:'p6',n:'Carpenter Short', code:'RW-M-6034',cat:"Men's · Shorts",f:5,hex:'#131A21'},
+];
+
+/* ═══════════ TIER — 3D is the second thing that loads, never the first ═══════════ */
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const conn=navigator.connection||{};
+const slow=conn.saveData||/^(slow-)?2g$|^3g$/.test(conn.effectiveType||'');
+const mem=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8;
+const mobile=innerWidth<768;
+const TIER=(reduced||slow)?0:(mem<=4||cores<=4||mobile)?1:2;
+
+const $=id=>document.getElementById(id);
+const fade=$('fade'),bars=$('bars'),markersEl=$('markers'),ticksEl=$('ticks'),glfb=$('glfb');
+const hudR=$('hudR'),hudTC=$('hudTC'),led=$('led'),progressBar=$('progress');
+hudR.textContent=`TIER ${TIER} · — FPS`;
+
+ACTS.forEach((_,i)=>{const t=document.createElement('span');t.className='tick';t.dataset.on=i===0;ticksEl.appendChild(t)});
+const ticks=[...ticksEl.children];
+
+/* ═══════════ PROCEDURAL DENIM — twill + slub, no network ═══════════ */
+function denimTexture(size){
+ const c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d');
+ x.fillStyle='#8c8c8c';x.fillRect(0,0,size,size);
+ for(let i=-size;i<size*2;i+=5){
+   x.lineWidth=1.4;x.strokeStyle='rgba(255,255,255,.34)';
+   x.beginPath();x.moveTo(i,0);x.lineTo(i+size*.5,size);x.stroke();
+   x.strokeStyle='rgba(0,0,0,.36)';
+   x.beginPath();x.moveTo(i+2.4,0);x.lineTo(i+2.4+size*.5,size);x.stroke();
+ }
+ for(let i=0;i<size*24;i++){
+   const a=Math.random()*.16;
+   x.fillStyle=Math.random()>.5?`rgba(255,255,255,${a})`:`rgba(0,0,0,${a})`;
+   x.fillRect(Math.random()*size,Math.random()*size,Math.random()*9+1,1);
+ }
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;
+}
+
+let renderer,scene,camera,form,weave,key,rim,fill,cloth,ready=false;
+/* ═══════════ HUMAN FIGURE — a display mannequin, dressed ═══════════
+   Built as bones between anatomical joints, so the pose is data rather than
+   geometry. Jacket, sleeves and jeans take the denim material and respond to
+   the wash configurator; head, hands and feet stay matte resin. */
+const SEG=TIER===2?24:12;
+const V=(x,y,z)=>new THREE.Vector3(x,y,z||0);
+function bone(a,b,r1,r2,mat){
+ const dir=new THREE.Vector3().subVectors(b,a),len=dir.length();
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,len,SEG,1,false),mat);
+ m.position.copy(a).add(b).multiplyScalar(.5);
+ m.quaternion.setFromUnitVectors(V(0,1,0),dir.clone().normalize());
+ return m;
+}
+function joint(p,r,mat){
+ const m=new THREE.Mesh(new THREE.SphereGeometry(r,SEG,Math.max(8,SEG>>1)),mat);
+ m.position.copy(p);return m;
+}
+function contactShadow(){
+ const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ const g=x.createRadialGradient(64,64,0,64,64,64);
+ g.addColorStop(0,'rgba(0,0,0,.72)');g.addColorStop(.5,'rgba(0,0,0,.26)');g.addColorStop(1,'rgba(0,0,0,0)');
+ x.fillStyle=g;x.fillRect(0,0,128,128);
+ const m=new THREE.Mesh(new THREE.CircleGeometry(.85,28),
+  new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));
+ m.rotation.x=-Math.PI/2;m.position.y=.006;return m;
+}
+function buildFigure(denim,resin,metal){
+ const g=new THREE.Group();
+ // Torso and hips are lathed, then flattened in Z — a real ribcage is elliptical, not round.
+ const lathe=(rows,mat,zs)=>{
+  const m=new THREE.Mesh(new THREE.LatheGeometry(rows.map(([r,y])=>new THREE.Vector2(r,y)),SEG*2),mat);
+  m.scale.z=zs;return m;
+ };
+ g.add(lathe([[.070,1.54],[.132,1.51],[.170,1.45],[.176,1.36],[.148,1.26],
+              [.128,1.12],[.140,1.00],[.150,.88]],denim,.66));            // jacket
+ g.add(lathe([[.140,1.06],[.150,1.02],[.158,.92],[.148,.82],[.130,.74]],denim,.72)); // jeans, waist to seat
+ g.add(bone(V(0,1.48),V(0,1.61),.053,.048,resin));                        // neck
+ const head=joint(V(0,1.71),.105,resin);head.scale.set(.92,1.16,1);g.add(head);
+ [-1,1].forEach(s=>{
+  const sh=V(.178*s,1.44),el=V(.238*s,1.10,.02),wr=V(.268*s,.80,.04),hn=V(.282*s,.67,.05);
+  g.add(joint(sh,.086,denim),bone(sh,el,.062,.050,denim),joint(el,.050,denim),
+        bone(el,wr,.050,.038,denim),joint(wr,.037,resin),bone(wr,hn,.036,.026,resin));
+  const hp=V(.092*s,.86),kn=V(.104*s,.46,.01),an=V(.094*s,.10,-.01),to=V(.094*s,.035,.13);
+  g.add(bone(hp,kn,.115,.078,denim),joint(kn,.076,denim),
+        bone(kn,an,.078,.054,denim),joint(an,.050,resin),bone(an,to,.048,.036,resin));
+ });
+ const base=new THREE.Mesh(new THREE.CylinderGeometry(.34,.38,.035,32),metal);
+ base.position.y=.018;g.add(base,contactShadow());
+ return g;                                                                // ≈1.83 m, feet at y=0
+}
+function init3D(){
+ try{renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:TIER===2,powerPreference:'high-performance'});}
+ catch(e){document.body.dataset.nogl='true';return;}
+ renderer.setPixelRatio(Math.min(devicePixelRatio,TIER===2?2:1.5));
+ renderer.outputEncoding=THREE.sRGBEncoding;
+ scene=new THREE.Scene();
+ scene.background=new THREE.Color(0x02070C);
+ scene.fog=new THREE.Fog(0x07131f,3.4,13);
+ camera=new THREE.PerspectiveCamera(mobile?46:38,1,.1,100);
+ const tex=denimTexture(TIER===2?1024:512);tex.repeat.set(5,5);
+ cloth=new THREE.MeshStandardMaterial({color:0x1B3D63,roughness:.94,metalness:.02,bumpMap:tex,bumpScale:.03,roughnessMap:tex});
+ const resin=new THREE.MeshStandardMaterial({color:0xC7CBD1,roughness:.62,metalness:.04});
+ const metal=new THREE.MeshStandardMaterial({color:0x2A3038,roughness:.30,metalness:.9});
+ const wt=tex.clone();wt.needsUpdate=true;wt.repeat.set(4,4);
+ weave=new THREE.Mesh(new THREE.PlaneGeometry(8,8),
+   new THREE.MeshStandardMaterial({color:0x1B3D63,roughness:.95,bumpMap:wt,bumpScale:.05,roughnessMap:wt}));
+ weave.position.set(0,1.1,0);
+ form=buildFigure(cloth,resin,metal);
+ key=new THREE.DirectionalLight(0xffffff,1.2);key.position.set(3,5,4);
+ rim=new THREE.DirectionalLight(0x315B82,2.2);rim.position.set(-4,2,-3);
+ fill=new THREE.AmbientLight(0x24405c,.55);
+ scene.add(weave,form,key,rim,fill);
+ ready=true;resize();
+}
+function resize(){
+ if(!ready)return;
+ renderer.setSize(innerWidth,innerHeight,false);
+ camera.aspect=innerWidth/innerHeight;camera.fov=innerWidth<768?46:38;camera.updateProjectionMatrix();
+}
+if(TIER>0&&window.THREE)init3D();else document.body.dataset.nogl='true';
+addEventListener('resize',()=>{resize();reelResize();},{passive:true});
+
+/* ═══════════ THE EDIT — film segments cut between content ═══════════ */
+const films=[...document.querySelectorAll('[data-film]')].map(el=>({
+ el,acts:el.dataset.acts.split(',').map(Number),markers:el.dataset.markers==='true'
+}));
+const typeSlots=[...document.querySelectorAll('.film__type')];
+let current=-1,pending=-1,actT=0,dipT=0,liveFabric=0,fps=60,last=performance.now();
+/* Every visual property has a target; the frame loop damps toward it, so nothing
+   snaps. Act changes still happen instantly — but under full black. */
+const TGT={bg:0x02070C,cloth:0x16304F,rough:.96,key:.6,rim:1.6,rimC:0x315B82};
+let _tc,_tb,_tr,_cam,_look,lookCur,_v;
+if(window.THREE){
+ _tc=new THREE.Color();_tb=new THREE.Color();_tr=new THREE.Color();
+ _cam=new THREE.Vector3();_look=new THREE.Vector3();lookCur=new THREE.Vector3(0,1.1,0);
+ _v=new THREE.Vector3();
+}
+function dip(hold){
+ fade.style.transition='opacity 150ms linear';fade.style.opacity='1';
+ clearTimeout(dipT);
+ dipT=setTimeout(()=>{
+  fade.style.transition='opacity 460ms cubic-bezier(.16,1,.30,1)';fade.style.opacity='0';
+ },hold||170);
+}
+
+function paintType(a){
+ typeSlots.forEach(s=>{
+  const eb=s.querySelector('[data-t="eyebrow"]'),ti=s.querySelector('[data-t="title"]'),sp=s.querySelector('[data-t="spec"]');
+  if(!eb)return;
+  eb.textContent=a.eyebrow;
+  ti.innerHTML=(a.title||'').split('\n').map(l=>`<span style="display:block">${l}</span>`).join('');
+  sp.textContent=a.spec;
+  s.dataset.final=!!a.final;
+ });
+}
+function applyAct(a,globalIdx){
+ paintType(a);
+ bars.dataset.on=!!a.bars;
+ markersEl.dataset.on=!!a.live;
+ hudTC.textContent=`${String(globalIdx+1).padStart(2,'0')}:00 · ACT ${a.id}`;
+ ticks.forEach((t,n)=>t.dataset.on=n===globalIdx);
+ glfb.style.setProperty('--fb',a.fb);
+ TGT.bg=a.bg;TGT.key=a.key;TGT.rim=a.rim;TGT.rimC=a.rimC;
+ if(a.live)applyFabric(liveFabric);else{TGT.cloth=a.cloth;TGT.rough=a.rough;}
+ if(!ready)return;
+ weave.visible=a.mode==='weave';form.visible=a.mode==='form';
+ weave.material.color.setHex(a.cloth);
+}
+/* A cut is: fade to black (150ms) → swap everything while nothing is visible →
+   fade back over 460ms. The change is still instant; the viewer just never sees
+   the seam. First act applies with no dip, so the page opens on an image. */
+function scheduleAct(gi){
+ if(gi===current||gi===pending)return;
+ if(current<0){current=gi;applyAct(ACTS[gi],gi);return;}
+ pending=gi;dip();
+ clearTimeout(actT);
+ actT=setTimeout(()=>{current=gi;pending=-1;applyAct(ACTS[gi],gi);},155);
+}
+function applyFabric(i){
+ const f=FABRICS[i];liveFabric=i;
+ TGT.cloth=f.three;TGT.rough=f.r;
+ $('readout').innerHTML=[['Lot',f.lot],['Weight',f.w],['Comp',f.c],['Stretch',f.s]]
+  .map(([k,v])=>`<div class="readout__cell"><p class="readout__k">${k}</p><p class="readout__v">${v}</p></div>`).join('');
+ [...$('chips').children].forEach((c,n)=>c.setAttribute('aria-pressed',String(n===i)));
+ markersEl.querySelectorAll('[data-mk]').forEach(m=>{
+  const k=m.dataset.mk;m.querySelector('b').textContent=k==='w'?f.w:k==='c'?f.c:f.s;
+ });
+}
+
+const MARKERS=[{y:1.36,k:'w',label:'Weight'},{y:.98,k:'c',label:'Comp'},{y:.50,k:'s',label:'Stretch'}];
+markersEl.innerHTML=MARKERS.map(m=>`<div class="marker" data-mk="${m.k}">
+ <span class="marker__dot"></span><span class="marker__line"></span>
+ <span class="marker__tag">${m.label} <b>—</b></span></div>`).join('');
+const markerEls=[...markersEl.children];
+
+/* Continuous loop rather than a scroll handler: damping needs frames of its own,
+   otherwise motion stops the instant the finger lifts. Rendering is skipped
+   whenever no film segment holds the viewport, so idle cost stays near zero. */
+function tick(){
+ requestAnimationFrame(tick);
+ const now=performance.now(),dt=Math.min(60,now-last);last=now;
+ fps=fps*.92+(1000/Math.max(1,dt))*.08;
+ const k=1-Math.pow(.002,dt/1000);          // frame-rate independent damping
+ const vh=innerHeight,mid=vh*.5;
+ progressBar.style.width=(scrollY/Math.max(1,document.body.scrollHeight-vh)*100)+'%';
+ $('nav').dataset.solid=scrollY>60;
+
+ let active=null,localP=0;
+ films.forEach(f=>{
+  const r=f.el.getBoundingClientRect();
+  if(r.top<mid&&r.bottom>mid){active=f;localP=Math.min(.999,Math.max(0,(mid-r.top)/r.height));}
+ });
+ const lightSec=document.querySelector('.sec--light').getBoundingClientRect();
+ document.body.dataset.light=lightSec.top<mid&&lightSec.bottom>mid;
+ led.dataset.on=!!active;
+
+ let t=0;
+ if(active){
+  const n=active.acts.length,li=Math.min(n-1,Math.floor(localP*n));
+  scheduleAct(active.acts[li]);
+  t=(active.acts[li]===current)?Math.min(1,localP*n-li):1;   // hold while a cut resolves
+ }
+ hudR.textContent=`TIER ${TIER} · ${Math.round(fps)} FPS`;
+ if(!ready||current<0||!active)return;
+
+ const a=ACTS[current];
+ _cam.set(a.cam[0]+(a.camTo[0]-a.cam[0])*t,
+          a.cam[1]+(a.camTo[1]-a.cam[1])*t,
+          a.cam[2]+(a.camTo[2]-a.cam[2])*t);
+ camera.position.lerp(_cam,k);
+ _look.set(a.look[0],a.look[1],a.look[2]);
+ lookCur.lerp(_look,k);camera.lookAt(lookCur);
+ if(a.mode==='form'){
+  const r=a.rot+(a.rotTo-a.rot)*t;
+  form.rotation.y+=(r-form.rotation.y)*k;
+ }
+ _tc.setHex(TGT.cloth);cloth.color.lerp(_tc,k);
+ cloth.roughness+=(TGT.rough-cloth.roughness)*k;
+ _tb.setHex(TGT.bg);scene.background.lerp(_tb,k);scene.fog.color.copy(scene.background);
+ _tr.setHex(TGT.rimC);rim.color.lerp(_tr,k);
+ key.intensity+=(TGT.key-key.intensity)*k;
+ rim.intensity+=(TGT.rim-rim.intensity)*k;
+ renderer.render(scene,camera);
+
+ if(a.live&&innerWidth>=1024){
+  markerEls.forEach((el,i)=>{
+   _v.set(0,MARKERS[i].y,.30).applyMatrix4(form.matrixWorld).project(camera);
+   el.style.left=((_v.x*.5+.5)*innerWidth)+'px';
+   el.style.top=((-_v.y*.5+.5)*innerHeight)+'px';
+   el.style.opacity=_v.z<1?1:0;
+  });
+ }
+}
+
+/* ═══════════ SHADE CARDS ═══════════ */
+$('cards').innerHTML=FABRICS.map((f,i)=>`
+ <button class="card" style="--sw:${f.hex}" data-card="${i}" aria-expanded="false">
+  <span class="card__punch"></span><span class="card__staple"></span>
+  <span class="card__cloth"><span class="card__peel"></span></span>
+  <span class="card__spec">
+   <span class="card__name" style="display:block">${f.n}</span>
+   <span class="card__row"><span>Weight</span><span>${f.w}</span></span>
+   <span class="card__row"><span>Comp</span><span>${f.c}</span></span>
+   <span class="card__row"><span>Stretch</span><span>${f.s}</span></span>
+   <span class="card__row"><span>Lot</span><span>${f.lot}</span></span>
+  </span>
+ </button>`).join('');
+
+/* ═══════════ CONSOLE ═══════════ */
+$('chips').innerHTML=FABRICS.map((f,i)=>
+ `<button class="chip" data-chip="${i}" style="--sw:${f.hex}" aria-pressed="${i===0}">
+   <span class="chip__sw"></span>${f.n}</button>`).join('');
+applyFabric(0);
+
+/* ═══════════ HANG TAGS ═══════════ */
+$('rail').innerHTML=PRODUCTS.map(p=>{const f=FABRICS[p.f];return `
+ <article class="tag">
+  <span class="tag__string"></span>
+  <div class="tag__body">
+   <span class="grommet"></span>
+   <div class="tag__img" style="--sw:${p.hex}"><span>Product image<br>1200 × 1600</span></div>
+   <h3 class="tag__name">${p.n}</h3>
+   <p class="tag__row"><span>Style</span><span>${p.code}</span></p>
+   <p class="tag__row"><span>Fabric</span><span>${f.n}</span></p>
+   <p class="tag__row"><span>Cat</span><span>${p.cat}</span></p>
+   <button class="tag__add" data-add="${p.id}" aria-pressed="false">♡ Add to selection</button>
+  </div>
+ </article>`}).join('');
+
+/* ═══════════ SELECTION ═══════════ */
+const sel=new Map();
+function renderSel(){
+ const n=sel.size;
+ $('pillN').textContent=n;$('pill').dataset.on=n>0;
+ $('dCount').textContent=`${n} ${n===1?'style':'styles'}`;
+ $('closeNote').textContent=n?`${n} ${n===1?'style':'styles'} selected — send them to us.`:'';
+ $('closeCta').firstChild.textContent=n?'Send your selection ':'Start the conversation ';
+ $('dBody').innerHTML=n?'':`<p class="empty">Nothing selected yet. Clip tags as you browse and send them in one go.</p>`;
+ sel.forEach(p=>$('dBody').insertAdjacentHTML('beforeend',`
+  <div class="dline"><span class="dline__sw" style="--sw:${p.hex}"></span>
+   <div><p class="h3" style="font-size:.86rem">${p.n}</p>
+   <p class="mono" style="color:var(--ink-faint);font-size:.58rem;margin-top:2px">${p.code}</p></div>
+   <button class="dline__x" data-rm="${p.id}">Remove</button></div>`));
+}
+document.addEventListener('click',e=>{
+ const card=e.target.closest('[data-card]');
+ if(card){const o=card.classList.toggle('is-open');card.setAttribute('aria-expanded',o);return;}
+ const chip=e.target.closest('[data-chip]');
+ if(chip){dip(110);setTimeout(()=>applyFabric(+chip.dataset.chip),115);return;}
+ const add=e.target.closest('[data-add]');
+ if(add){const p=PRODUCTS.find(x=>x.id===add.dataset.add);
+  if(sel.has(p.id)){sel.delete(p.id);add.setAttribute('aria-pressed','false');add.textContent='♡ Add to selection';}
+  else{sel.set(p.id,p);add.setAttribute('aria-pressed','true');add.textContent='✓ In your selection';}
+  renderSel();return;}
+ const rm=e.target.closest('[data-rm]');
+ if(rm){sel.delete(rm.dataset.rm);
+  const b=document.querySelector(`[data-add="${rm.dataset.rm}"]`);
+  if(b){b.setAttribute('aria-pressed','false');b.textContent='♡ Add to selection';}
+  renderSel();return;}
+});
+const openDrawer=v=>{$('drawer').dataset.open=v;$('scrim').dataset.open=v;document.body.style.overflow=v?'hidden':''};
+$('pill').onclick=()=>openDrawer(true);$('dClose').onclick=()=>openDrawer(false);
+$('scrim').onclick=()=>openDrawer(false);$('dSend').onclick=()=>openDrawer(false);
+addEventListener('keydown',e=>{if(e.key==='Escape')openDrawer(false)});
+renderSel();
+
+/* ═══════════ REEL ═══════════ */
+const rc=$('reelCanvas'),rx=rc.getContext('2d');
+let reelOn=!reduced&&!slow,reelT=0,reelRaf=0;
+function reelResize(){rc.width=rc.clientWidth;rc.height=rc.clientHeight}
+reelResize();
+function reelFrame(){
+ reelT+=1/60;const w=rc.width,h=rc.height;
+ const g=rx.createLinearGradient(0,0,w,h);
+ g.addColorStop(0,'#0e2740');g.addColorStop(.55,'#0a1a2b');g.addColorStop(1,'#050d16');
+ rx.fillStyle=g;rx.fillRect(0,0,w,h);
+ rx.save();rx.translate(w/2,h/2);rx.rotate(-.55);rx.translate(-w,-h);
+ const off=(reelT*26)%8;
+ for(let y=-h;y<h*3;y+=8){
+  rx.fillStyle='rgba(243,241,236,.045)';rx.fillRect(-w,y+off,w*4,2.2);
+  rx.fillStyle='rgba(0,0,0,.3)';rx.fillRect(-w,y+off+3,w*4,2.6);
+ }
+ rx.restore();
+ const lx=(Math.sin(reelT*.34)*.5+.5)*w;
+ const lg=rx.createRadialGradient(lx,h*.34,0,lx,h*.34,Math.max(w,h)*.55);
+ lg.addColorStop(0,'rgba(120,148,168,.24)');lg.addColorStop(1,'rgba(120,148,168,0)');
+ rx.fillStyle=lg;rx.fillRect(0,0,w,h);
+ $('reelTime').textContent='00:'+String(Math.floor(reelT)%60).padStart(2,'0');
+ if(reelOn)reelRaf=requestAnimationFrame(reelFrame);
+}
+$('reelToggle').onclick=e=>{reelOn=!reelOn;e.currentTarget.textContent=reelOn?'Pause film':'Play film';
+ e.currentTarget.setAttribute('aria-pressed',String(reelOn));if(reelOn)reelFrame();else cancelAnimationFrame(reelRaf)};
+new IntersectionObserver(es=>es.forEach(e=>{
+ if(!e.isIntersecting)cancelAnimationFrame(reelRaf);else if(reelOn)reelFrame();
+}),{threshold:.05}).observe($('reel'));
+reelFrame();
+
+/* ═══════════ REVEALS ═══════════ */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+}),{rootMargin:'0px 0px -10% 0px'});
+document.querySelectorAll('[data-reveal]').forEach(n=>io.observe(n));
+tick();
+</script>
+</body>
+</html>

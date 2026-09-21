@@ -1,0 +1,99 @@
+rules_version = '2';
+// ═══════════════════════════════════════════════════════════════════════
+// DutyFreeSourcing Inc. — Firestore Security Rules
+//
+// Roles stored in users/{uid}.role:
+//   super_admin  → Full access. Only role that can delete.
+//   staff        → IT staff. Read/write all. No delete.
+//   viewer       → Own dept read-only.
+//
+// IMPORTANT:
+//   - Read rules use ONLY request.auth (no get() calls on reads)
+//     to avoid "permission denied" on list queries.
+//   - get() is used ONLY on write/delete where it's a single-doc op.
+//   - Department filtering is handled by the frontend query, not rules.
+// ═══════════════════════════════════════════════════════════════════════
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Safe to use get() only on writes (single-doc, not list queries)
+    function callerRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isSuperAdmin() {
+      return isAuthed() && callerRole() == 'super_admin';
+    }
+
+    function isStaffOrAbove() {
+      return isAuthed() && callerRole() in ['super_admin', 'staff'];
+    }
+
+    // ── Users ──────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow list:   if true;            // needed for /setup check
+      allow get:    if isAuthed();
+      allow create: if isAuthed();      // setup + admin creating users
+      allow update: if isAuthed() && (request.auth.uid == userId || isSuperAdmin());
+      allow delete: if isSuperAdmin() && request.auth.uid != userId;
+    }
+
+    // ── Departments ────────────────────────────────────────────────
+    match /departments/{id} {
+      allow read:   if isAuthed();
+      allow write:  if isSuperAdmin();
+    }
+
+    // ── Assets ────────────────────────────────────────────────────
+    // READ: all authenticated users can read.
+    //       Frontend filters by dept for viewers.
+    match /assets/{id} {
+      allow read:   if isAuthed();
+      allow create: if isStaffOrAbove();
+      allow update: if isStaffOrAbove();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Inventory ─────────────────────────────────────────────────
+    match /inventory/{id} {
+      allow read:   if isAuthed();
+      allow create: if isStaffOrAbove();
+      allow update: if isStaffOrAbove();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Stock Logs ─────────────────────────────────────────────────
+    match /stockLogs/{id} {
+      allow read:   if isAuthed();
+      allow create: if isStaffOrAbove();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Inventory Issuances ────────────────────────────────────────
+    match /inventoryIssuances/{id} {
+      allow read:   if isAuthed();
+      allow create: if isStaffOrAbove();
+      allow update: if isStaffOrAbove();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Asset Issuances ────────────────────────────────────────────
+    match /issuance/{id} {
+      allow read:   if isAuthed();
+      allow create: if isStaffOrAbove();
+      allow update: if isStaffOrAbove();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── Audit Logs ─────────────────────────────────────────────────
+    match /logs/{id} {
+      allow read:   if isAuthed();
+      allow create: if isAuthed();
+      allow delete: if isSuperAdmin();
+    }
+  }
+}

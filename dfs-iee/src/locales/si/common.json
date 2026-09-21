@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "dashboard": "උපකරණ පුවරුව",
+    "styles": "මෝස්තර",
+    "smv": "SMV ගණකය",
+    "ob": "මෙහෙයුම් බුලටිනය",
+    "lineBalancing": "පේළිය සමතුලනය",
+    "reports": "වාර්තා",
+    "chat": "කතා බහ",
+    "admin": "පරිපාලනය"
+  },
+  "auth": {
+    "signIn": "පුරනය වන්න",
+    "signOut": "පිටවන්න",
+    "createAccount": "ගිණුමක් සාදන්න",
+    "email": "ඊමේල්",
+    "password": "මුරපදය"
+  },
+  "smv": {
+    "stopwatchStudy": "කාල අධ්‍යයනය",
+    "motionAnalysis": "චලන විශ්ලේෂණය",
+    "machineBased": "යන්ත්‍ර පදනම්",
+    "performanceRating": "කාර්ය සාධන ශ්‍රේණිය",
+    "allowance": "අනුකූලතාව",
+    "observations": "නිරීක්ෂණ",
+    "calculatedSmv": "ගණනය කළ SMV"
+  },
+  "common": {
+    "loading": "පූරණය වෙමින්…",
+    "save": "සුරකින්න",
+    "cancel": "අවලංගු කරන්න",
+    "delete": "මකන්න",
+    "approve": "අනුමත කරන්න"
+  }
+}

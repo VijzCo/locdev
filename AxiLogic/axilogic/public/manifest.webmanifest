@@ -1,0 +1,50 @@
+{
+  "name": "AXILogic — Solutions & Consultancy",
+  "short_name": "AXILogic",
+  "description": "Software for businesses that make, move and sell physical things. ERP, point of sale, mobile apps, web platforms and shop-floor systems.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#141618",
+  "theme_color": "#141618",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start a project",
+      "short_name": "Contact",
+      "description": "Send an inquiry to AXILogic",
+      "url": "/#contact",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "What we build",
+      "short_name": "Services",
+      "description": "ERP, POS, mobile, web and consulting",
+      "url": "/#build",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+/* src/pages/admin/Login.css */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--navy);
+  padding: 20px;
+}
+
+.login-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 30% 40%, rgba(201,168,76,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 70%, rgba(30,47,85,.8) 0%, transparent 70%);
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 48px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.login-logo-mark {
+  width: 48px;
+  height: 48px;
+  background: var(--navy);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 18px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.login-logo strong { display: block; font-size: 15px; color: var(--navy); }
+.login-logo small { font-size: 11px; color: var(--gray-400); }
+
+.login-card h2 { font-size: 26px; margin-bottom: 6px; }
+.login-card > p { color: var(--gray-600); font-size: 14px; margin-bottom: 28px; }
+
+.login-pass-wrap { position: relative; }
+
+.login-pass-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--gray-400);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.login-pass-toggle:hover { color: var(--navy); }
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 13px;
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.login-btn:disabled { opacity: .7; cursor: not-allowed; }
+
+.login-footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.login-footer a { color: var(--gold); transition: color .2s; }
+.login-footer a:hover { color: var(--navy); }

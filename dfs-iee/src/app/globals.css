@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — Industrial / Factory floor aesthetic
+ *
+ * The palette is deliberately desaturated: this is a tool people use 8+
+ * hours a day on a production floor. Saturated colors cause eye fatigue
+ * and don't survive being viewed on cheap monitors in fluorescent light.
+ *
+ * Steel blue-grey base + amber accent. Amber chosen because it's the
+ * universal industrial "attention" color (high-vis vests, machinery
+ * warning lights) — IE staff read it intuitively as "look here".
+ * ------------------------------------------------------------------------- */
+
+@layer base {
+  :root {
+    /* Typography */
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-display: 'JetBrains Mono', ui-monospace, monospace;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    /* Light theme — paper-and-ink feel */
+    --background: 220 14% 96%;
+    --foreground: 220 25% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 14%;
+
+    --primary: 220 70% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 25% 14%;
+
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 8% 45%;
+
+    --accent: 35 92% 50%;
+    --accent-foreground: 220 25% 14%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 85%;
+    --input: 220 14% 88%;
+    --ring: 220 70% 28%;
+
+    --radius: 0.375rem;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 220 14% 94%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 220 14% 94%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 220 14% 94%;
+
+    --primary: 35 92% 55%;
+    --primary-foreground: 220 25% 8%;
+
+    --secondary: 220 25% 16%;
+    --secondary-foreground: 220 14% 94%;
+
+    --muted: 220 25% 16%;
+    --muted-foreground: 220 8% 60%;
+
+    --accent: 35 92% 55%;
+    --accent-foreground: 220 25% 8%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 18%;
+    --ring: 35 92% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+  /* Tabular numerals for all data tables — IE software lives and dies on
+     readable numbers. Aligned columns make scanning rate-cards fast. */
+  table, .tabular-nums, [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Subtle blueprint grid background on dashboard surfaces */
+  .bg-blueprint {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.4) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.4) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* Print: clean OB and report exports */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+}

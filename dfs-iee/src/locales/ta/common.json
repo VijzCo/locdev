@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "dashboard": "முகப்புப் பலகை",
+    "styles": "வடிவங்கள்",
+    "smv": "SMV கணிப்பான்",
+    "ob": "செயல்பாட்டு புல்லட்டின்",
+    "lineBalancing": "வரிசை சமநிலை",
+    "reports": "அறிக்கைகள்",
+    "chat": "உரையாடல்",
+    "admin": "நிர்வாகம்"
+  },
+  "auth": {
+    "signIn": "உள்நுழைக",
+    "signOut": "வெளியேறு",
+    "createAccount": "கணக்கை உருவாக்கு",
+    "email": "மின்னஞ்சல்",
+    "password": "கடவுச்சொல்"
+  },
+  "smv": {
+    "stopwatchStudy": "காலக் கட்டம் ஆய்வு",
+    "motionAnalysis": "இயக்க பகுப்பாய்வு",
+    "machineBased": "எந்திர அடிப்படை",
+    "performanceRating": "செயல்திறன் மதிப்பீடு",
+    "allowance": "அனுமதி",
+    "observations": "அவதானிப்புகள்",
+    "calculatedSmv": "கணக்கிடப்பட்ட SMV"
+  },
+  "common": {
+    "loading": "ஏற்றுகிறது…",
+    "save": "சேமி",
+    "cancel": "ரத்து",
+    "delete": "அழி",
+    "approve": "ஒப்புதல்"
+  }
+}

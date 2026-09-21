@@ -1,0 +1,195 @@
+rules_version = '2';
+
+// =============================================================================
+// SMV Platform — Firestore Security Rules
+//
+// Enforces:
+//   1. Authentication required for all reads/writes
+//   2. Tenant isolation — users can only access their own tenant's data
+//   3. Permission-based writes — checked against user's permissions array
+//   4. Super admins (Anthropic-side, by claim) bypass tenant scoping
+//
+// Critical reads — never trust client-supplied tenantId. Always look up
+// the requesting user's tenantId from their user document.
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper functions
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function userTenantId() {
+      return userDoc().tenantId;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() &&
+        request.auth.token.role == 'super_admin';
+    }
+
+    function belongsToTenant(tenantId) {
+      return isSignedIn() && userTenantId() == tenantId;
+    }
+
+    function hasPermission(permission) {
+      return isSignedIn() &&
+        permission in userDoc().permissions;
+    }
+
+    function isActive() {
+      return userDoc().status == 'active';
+    }
+
+    function isTenantAdmin(tenantId) {
+      return belongsToTenant(tenantId) && (
+        hasPermission('tenant.manage') ||
+        hasPermission('users.manage')
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // Users — top-level collection. Users see their own doc; admins see all.
+    // -------------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        (userTenantId() == resource.data.tenantId && hasPermission('users.manage')) ||
+        isSuperAdmin()
+      );
+
+      // Only Cloud Functions (admin SDK) can write user docs — prevents
+      // clients from elevating their own role or permissions.
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Tenants — top-level. Read your own tenant; write requires admin perms.
+    // -------------------------------------------------------------------------
+
+    match /tenants/{tenantId} {
+      allow read: if belongsToTenant(tenantId) || isSuperAdmin();
+
+      // Tenant doc creation happens server-side during registration
+      allow create: if false;
+      allow update: if (belongsToTenant(tenantId) && hasPermission('tenant.manage'))
+                       || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+
+      // ---------------------------------------------------------------------
+      // Per-tenant subcollections — all share tenant isolation
+      // ---------------------------------------------------------------------
+
+      match /factories/{factoryId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.read');
+        allow create, update: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.write');
+        allow delete: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.delete');
+      }
+
+      match /departments/{departmentId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.write');
+      }
+
+      match /productionLines/{lineId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('lines.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('lines.write');
+      }
+
+      match /machines/{machineId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('factories.write');
+      }
+
+      match /motionLibrary/{motionId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('smv.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('smv.write');
+      }
+
+      match /buyers/{buyerId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('styles.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('styles.write');
+      }
+
+      match /styles/{styleId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('styles.read');
+        allow create, update: if belongsToTenant(tenantId) && isActive() && hasPermission('styles.write');
+        // Soft delete only — flip deletedAt instead of hard delete
+        allow delete: if false;
+      }
+
+      match /operations/{operationId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('smv.read');
+        allow create, update: if belongsToTenant(tenantId) && isActive() && hasPermission('smv.write');
+        allow delete: if belongsToTenant(tenantId) && isActive() && hasPermission('smv.write');
+      }
+
+      match /operationBulletins/{obId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('ob.read');
+        // OB writes go through Cloud Functions (onOperationWrite recomputes totals).
+        // Direct status changes to 'approved' require the approve permission.
+        allow create, update: if belongsToTenant(tenantId) && isActive() && hasPermission('ob.write')
+          && (
+            request.resource.data.status != 'approved' ||
+            hasPermission('ob.approve')
+          );
+      }
+
+      match /lineBalances/{balanceId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('lines.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('lines.write');
+      }
+
+      match /settings/{settingsId} {
+        allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('settings.read');
+        allow write: if belongsToTenant(tenantId) && isActive() && hasPermission('settings.write');
+      }
+
+      // Chat
+      match /chatRooms/{roomId} {
+        allow read, write: if belongsToTenant(tenantId) && isActive() && hasPermission('chat.access');
+
+        match /messages/{messageId} {
+          allow read: if belongsToTenant(tenantId) && isActive() && hasPermission('chat.access');
+          allow create: if belongsToTenant(tenantId) && isActive() && hasPermission('chat.access')
+                           && request.resource.data.senderId == request.auth.uid;
+          allow update, delete: if isSignedIn() && resource.data.senderId == request.auth.uid;
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Invitations — accessible by token holder (no auth needed for read)
+    // Server-side function validates and converts to user account.
+    // -------------------------------------------------------------------------
+
+    match /invitations/{invitationId} {
+      allow read: if true; // public read of invite by ID — token is the secret
+      allow write: if false; // only server-side
+    }
+
+    // -------------------------------------------------------------------------
+    // Activity logs — append-only, scoped by tenant
+    // -------------------------------------------------------------------------
+
+    match /activityLogs/{logId} {
+      allow read: if isSignedIn() &&
+        (userTenantId() == resource.data.tenantId) &&
+        hasPermission('settings.read');
+      allow create: if isSignedIn() &&
+        userTenantId() == request.resource.data.tenantId;
+      // Logs are immutable
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+:root{--ink:#141618;--line:#2e3338;--accent:#FF6B00;--text:#e9eaeb;--dim:#989ea4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;background:var(--ink);color:var(--text);
+  min-height:100dvh;display:grid;place-items:center;padding:24px;line-height:1.55}
+.box{max-width:420px}
+svg{margin-bottom:26px}
+h1{font-size:clamp(22px,5vw,30px);font-weight:600;letter-spacing:-1px;margin-bottom:12px}
+p{color:var(--dim);font-size:15px;margin-bottom:26px}
+button{background:var(--accent);color:#0f1113;border:0;border-radius:2px;padding:13px 24px;
+  font:inherit;font-weight:600;cursor:pointer}
+button:hover{background:#ff7d1f}
+.meta{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--dim)}

@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "styles": "Styles",
+    "smv": "SMV Calculator",
+    "ob": "Operation Bulletin",
+    "lineBalancing": "Line Balancing",
+    "reports": "Reports",
+    "chat": "Chat",
+    "admin": "Admin"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "createAccount": "Create account",
+    "email": "Email",
+    "password": "Password"
+  },
+  "smv": {
+    "stopwatchStudy": "Stopwatch Study",
+    "motionAnalysis": "Motion Analysis",
+    "machineBased": "Machine-based",
+    "performanceRating": "Performance rating",
+    "allowance": "Allowance",
+    "observations": "Observations",
+    "calculatedSmv": "Calculated SMV"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "approve": "Approve"
+  }
+}

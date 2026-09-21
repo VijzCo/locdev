@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RW Design — The Opening Film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+--rw-void:#07131F;--rw-indigo:#183A63;--rw-denim:#315B82;--rw-washed:#7894A8;
+--rw-ecru:#F3F1EC;--rw-steel:#8C949B;--rw-selvedge:#C4462F;
+--surface:var(--rw-void);--ink:var(--rw-ecru);--ink-muted:var(--rw-washed);--ink-faint:var(--rw-steel);
+--line:rgba(243,241,236,.10);--line-strong:rgba(243,241,236,.22);--accent-edge:var(--rw-selvedge);
+--font-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+--font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+--gutter:clamp(20px,5vw,64px);--max:1440px;
+--dur-fast:180ms;--dur-base:320ms;--dur-slow:640ms;
+--ease-out:cubic-bezier(.16,1,.30,1);--twill:63deg;
+}
+@media (prefers-reduced-motion:reduce){:root{--dur-fast:1ms;--dur-base:1ms;--dur-slow:1ms}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--surface);color:var(--ink);font-family:var(--font-display);
+ font-variation-settings:'wdth' 100,'wght' 400;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,canvas{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent-edge);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+body::after{content:'';position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.04;mix-blend-mode:overlay;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--gutter)}
+.mono{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase}
+.h-display{font-family:var(--font-display);font-size:clamp(3rem,10.5vw,10rem);line-height:.84;
+ letter-spacing:-.04em;text-transform:uppercase;font-variation-settings:'wdth' 118,'wght' 700}
+.h1{font-size:clamp(2.1rem,5.6vw,4.6rem);line-height:.94;letter-spacing:-.03em;text-transform:uppercase;
+ font-variation-settings:'wdth' 116,'wght' 700}
+.h3{font-size:clamp(1.05rem,1.8vw,1.5rem);letter-spacing:-.01em;font-variation-settings:'wdth' 106,'wght' 600}
+.btn{display:inline-flex;align-items:center;gap:12px;border-radius:999px;padding:14px 28px;min-height:48px;
+ font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+ transition:all var(--dur-base) var(--ease-out)}
+.btn--primary{background:var(--rw-ecru);color:var(--rw-void)}
+.btn--primary:hover{transform:translateY(-2px)}
+.btn--ghost{border:1px solid var(--line-strong)}
+.btn--ghost:hover{border-color:var(--accent-edge)}
+.btn--dark{background:var(--rw-void);color:var(--rw-ecru)}
+
+/* ══════════ THE FILM ══════════ */
+.film{position:relative;height:760svh;background:#02070C}
+.stage{position:sticky;top:0;height:100svh;overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.stage__fallback{position:absolute;inset:0;background:var(--fb,#07131f);
+ background-image:repeating-linear-gradient(var(--twill),rgba(243,241,236,.03) 0 1px,transparent 1px 5px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.3) 0 2px,transparent 2px 7px);display:none}
+.stage[data-nogl="true"] #gl{display:none}
+.stage[data-nogl="true"] .stage__fallback{display:block}
+.vig{position:absolute;inset:0;pointer-events:none;
+ background:radial-gradient(120% 80% at 50% 45%,transparent 30%,rgba(2,7,12,.78) 100%)}
+.bars{position:absolute;inset:0;pointer-events:none}
+.bars::before,.bars::after{content:'';position:absolute;left:0;right:0;height:clamp(28px,6vh,64px);background:#02070C}
+.bars::before{top:0}.bars::after{bottom:0}
+
+/* the cut */
+.flash{position:absolute;inset:0;background:var(--rw-ecru);opacity:0;pointer-events:none;z-index:20}
+.flash[data-fire="true"]{opacity:1;transition:none}
+.flash[data-fire="false"]{opacity:0;transition:opacity 220ms linear}
+
+/* type layer */
+.type{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;justify-content:flex-end;
+ padding:clamp(52px,9vh,110px) var(--gutter);pointer-events:none}
+.type__inner{max-width:var(--max);margin-inline:auto;width:100%}
+.type__eyebrow{color:var(--ink-faint);display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.type__eyebrow::before{content:'';width:26px;height:1px;background:var(--accent-edge)}
+.type__spec{color:var(--ink-muted);margin-top:18px}
+.type__cta{margin-top:30px;pointer-events:auto;display:none}
+.type[data-final="true"] .type__cta{display:inline-flex}
+
+/* HUD */
+.hud{position:absolute;z-index:16;color:var(--ink-faint);font-family:var(--font-mono);
+ font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
+.hud--tl{top:clamp(40px,7vh,82px);left:var(--gutter)}
+.hud--tr{top:clamp(40px,7vh,82px);right:var(--gutter);text-align:right}
+.ticks{position:absolute;right:var(--gutter);top:50%;transform:translateY(-50%);z-index:16;display:none;
+ flex-direction:column;gap:10px}
+@media(min-width:900px){.ticks{display:flex}}
+.tick{width:22px;height:2px;background:var(--line-strong);transition:background var(--dur-fast),width var(--dur-fast)}
+.tick[data-on="true"]{background:var(--accent-edge);width:38px}
+
+/* ══════════ DARK EDITORIAL ══════════ */
+.section{padding-block:clamp(96px,12vw,160px)}
+.lede{color:var(--ink-muted);max-width:60ch;font-size:clamp(1rem,1.05vw,1.125rem)}
+.quote{border-left:2px solid var(--accent-edge);padding-left:clamp(20px,3vw,40px)}
+.quote p{font-size:clamp(1.75rem,3.6vw,3rem);line-height:1.04;letter-spacing:-.025em;text-transform:uppercase;
+ font-variation-settings:'wdth' 110,'wght' 600}
+.quote p+p{color:var(--ink-muted)}
+
+/* ══════════ THE FLIP — instant tonal cut ══════════ */
+.light{background:var(--rw-ecru);color:var(--rw-void);position:relative}
+.light .lede{color:#4A5560}
+.light .mono{color:#6B7783}
+.light .type__eyebrow{color:#6B7783}
+.light .eyebrow::before{background:var(--accent-edge)}
+.light::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-edge)}
+.eyebrow{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+ color:var(--ink-faint);display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:'';width:26px;height:1px;background:var(--accent-edge)}
+.light .eyebrow{color:#6B7783}
+
+/* shade cards on paper */
+.cards{display:grid;gap:clamp(16px,2vw,28px);grid-template-columns:repeat(2,1fr);margin-top:clamp(36px,5vw,64px)}
+@media(min-width:760px){.cards{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1160px){.cards{grid-template-columns:repeat(6,1fr)}}
+.card{position:relative;background:#FFFDF8;box-shadow:0 1px 0 rgba(7,19,31,.14),0 10px 22px -18px rgba(7,19,31,.5);
+ padding:10px 10px 0;transition:transform var(--dur-base) var(--ease-out),box-shadow var(--dur-base)}
+.card:hover,.card:focus-visible{transform:translateY(-6px) rotate(-.5deg);box-shadow:0 1px 0 rgba(7,19,31,.14),0 22px 34px -22px rgba(7,19,31,.55)}
+.card__punch{position:absolute;top:14px;left:14px;width:15px;height:15px;border-radius:999px;background:var(--rw-ecru);
+ box-shadow:inset 0 2px 3px rgba(7,19,31,.35);z-index:3}
+.card__staple{position:absolute;top:16px;right:14px;width:14px;height:3px;background:#9BA5AE;transform:rotate(-24deg);z-index:3}
+.card__cloth{aspect-ratio:1;background:var(--sw,#1b3d63);position:relative;overflow:hidden}
+.card__cloth::after{content:'';position:absolute;inset:0;
+ background:repeating-linear-gradient(var(--twill),rgba(255,255,255,.06) 0 1px,transparent 1px 4px),
+ repeating-linear-gradient(var(--twill),rgba(0,0,0,.24) 0 2px,transparent 2px 6px)}
+.card__spec{padding:12px 4px 14px}
+.card__name{font-size:.82rem;text-transform:uppercase;font-variation-settings:'wdth' 108,'wght' 700;letter-spacing:-.01em}
+.card__row{display:flex;justify-content:space-between;gap:6px;font-family:var(--font-mono);font-size:.58rem;
+ letter-spacing:.06em;text-transform:uppercase;color:#6B7783;margin-top:6px;border-top:1px solid rgba(7,19,31,.10);padding-top:5px}
+.card__row span:last-child{color:var(--rw-void)}
+
+/* ══════════ VIDEO PANEL ══════════ */
+.reel{position:relative;height:min(88svh,760px);overflow:hidden;background:#02070C}
+#reelCanvas{position:absolute;inset:0;width:100%;height:100%}
+.reel__grade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,7,12,.55),transparent 35%,rgba(2,7,12,.85))}
+.reel__inner{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:space-between;
+ padding:clamp(32px,6vh,64px) var(--gutter);max-width:var(--max);margin-inline:auto}
+.reel__tag{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--accent-edge);border-radius:999px;
+ padding:5px 12px;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.11em;text-transform:uppercase;color:var(--rw-ecru)}
+.reel__dot{width:6px;height:6px;border-radius:999px;background:var(--accent-edge)}
+.reel__ctrl{display:flex;gap:12px;align-items:center;margin-top:22px}
+
+.footer{border-top:1px solid var(--line);padding-block:clamp(40px,6vw,72px);color:var(--ink-faint)}
+.closing{text-align:center;padding-block:clamp(110px,17vw,220px);border-top:1px solid var(--line)}
+
+[data-reveal]{opacity:0;transform:translateY(20px);transition:opacity 900ms var(--ease-out),transform 900ms var(--ease-out)}
+[data-reveal].in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<a href="#after" class="sr">Skip the opening film</a>
+
+<!-- ══════════ ACT STRUCTURE ══════════ -->
+<div class="film" id="film">
+  <div class="stage" id="stage" data-nogl="false">
+    <canvas id="gl"></canvas>
+    <div class="stage__fallback" id="fb"></div>
+    <div class="vig"></div>
+    <div class="bars"></div>
+    <div class="flash" id="flash" data-fire="false"></div>
+
+    <p class="hud hud--tl" id="hudL">RW DESIGN · DIGITAL SHOWROOM</p>
+    <p class="hud hud--tr" id="hudR">00:00 · ACT 01/06</p>
+    <div class="ticks" id="ticks"></div>
+
+    <div class="type" id="type">
+      <div class="type__inner">
+        <p class="type__eyebrow mono" id="tEyebrow">Denim Show 2026</p>
+        <h1 class="h-display" id="tTitle"></h1>
+        <p class="type__spec mono" id="tSpec"></p>
+        <a class="btn btn--primary type__cta" href="#after">Enter the showroom <span>→</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="after">
+
+<!-- ══ STATEMENT (dark) ══ -->
+<section class="section wrap">
+  <div data-reveal>
+    <p class="eyebrow" style="margin-bottom:32px">After the film</p>
+    <div class="quote"><p>Built around denim.</p><p>Designed around possibility.</p></div>
+    <p class="lede" style="margin-top:30px">A development-led denim house. Fabric, wash, finish and production under one roof — so what leaves the floor is what was drawn on the first page.</p>
+  </div>
+</section>
+
+<!-- ══ THE FLIP — dark to light, no transition ══ -->
+<section class="section light">
+  <div class="wrap">
+    <div data-reveal>
+      <p class="eyebrow" style="margin-bottom:22px">The shade card table</p>
+      <h2 class="h1">Now Touch<br>The Cloth.</h2>
+      <p class="lede" style="margin-top:24px">The film goes dark so the fabric can go light. Every denim we develop, catalogued the way it sits on the table.</p>
+    </div>
+    <div class="cards" id="cards" data-reveal></div>
+    <a class="btn btn--dark" style="margin-top:44px" href="#reel">Continue <span>→</span></a>
+  </div>
+</section>
+
+<!-- ══ VIDEO PANEL ══ -->
+<section class="reel" id="reel">
+  <canvas id="reelCanvas"></canvas>
+  <div class="reel__grade"></div>
+  <div class="reel__inner">
+    <div>
+      <span class="reel__tag"><span class="reel__dot"></span>Placeholder film · 1920×1080 · H.264</span>
+    </div>
+    <div>
+      <h2 class="h1">Where ideas<br>become garments.</h2>
+      <p class="lede" style="margin-top:20px">Facility film drops in here. Muted, looped, poster-first, and it never autoplays on a slow connection.</p>
+      <div class="reel__ctrl">
+        <button class="btn btn--ghost" id="reelToggle" aria-pressed="true">Pause film</button>
+        <span class="mono" style="color:var(--ink-faint)" id="reelTime">00:00</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap" data-reveal>
+    <h2 class="h-display" style="margin-bottom:34px">Let's create<br>together.</h2>
+    <a class="btn btn--primary" href="#">Start the conversation <span>→</span></a>
+  </div>
+</section>
+
+<footer class="footer"><div class="wrap mono">© 2026 RW Design — all content placeholder · Opening film prototype</div></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ACT SHEET — this is the film's edit. Every value here is a
+   CMS field in production (Admin › Home › Cinematic hero › Acts).
+   A "cut" is a hard discontinuity: camera, light, cloth and grade
+   all change on the same frame. Nothing cross-fades.
+   ═══════════════════════════════════════════════════════════ */
+const ACTS = [
+  { id:'01', eyebrow:'Denim Show 2026', title:'DENIM\nREIMAGINED.', spec:'RW DESIGN · DIGITAL SHOWROOM',
+    mode:'weave', cam:[0,0,3.4], camTo:[0,0,2.6], look:[0,0,0], bg:0x02070C, fb:'#02070C',
+    cloth:0x16304F, rough:.96, key:.55, rimC:0x315B82, rim:1.5, flash:false },
+
+  { id:'02', eyebrow:'01 — Fabric', title:'THE\nWEAVE.', spec:'14.2 OZ · RIGHT-HAND TWILL · 100% COTTON',
+    mode:'weave', cam:[-.5,.15,1.05], camTo:[.45,-.12,.78], look:[0,0,0], bg:0x050D16, fb:'#050D16',
+    cloth:0x1B3D63, rough:.92, key:1.15, rimC:0x7894A8, rim:2.1, flash:true },
+
+  { id:'03', eyebrow:'02 — The form', title:'RAW\nINDIGO.', spec:'RW-F-014 · RIGID · UNWASHED',
+    mode:'form', cam:[2.6,1.9,3.6], camTo:[-1.4,1.5,4.1], look:[0,1.55,0], bg:0x07131F, fb:'#07131F',
+    cloth:0x152F4E, rough:.95, key:1.35, rimC:0x315B82, rim:2.6, flash:true },
+
+  { id:'04', eyebrow:'03 — Wash', title:'STONE.\nRINSE.', spec:'RW-W-021 · 45 MIN · WATER LOGGED PER STYLE',
+    mode:'form', cam:[-1.1,.55,2.5], camTo:[.9,.95,2.9], look:[0,1.45,0], bg:0x1A2733, fb:'#1A2733',
+    cloth:0x6E90AE, rough:.82, key:2.05, rimC:0xF3F1EC, rim:1.5, flash:'ecru' },
+
+  { id:'05', eyebrow:'04 — Finish', title:'BLACK\nPOWER.', spec:'RW-F-068 · COATED · HIGH STRETCH',
+    mode:'form', cam:[1.5,2.35,2.4], camTo:[1.9,1.1,3.0], look:[0,1.6,0], bg:0x04080D, fb:'#04080D',
+    cloth:0x14191F, rough:.55, key:1.1, rimC:0xC4462F, rim:3.4, flash:true },
+
+  { id:'06', eyebrow:'05 — Garment', title:'FROM DENIM\nTO POSSIBILITY.', spec:'ENTER THE SHOWROOM',
+    mode:'form', cam:[0,1.9,6.4], camTo:[0,1.75,5.2], look:[0,1.5,0], bg:0x07131F, fb:'#07131F',
+    cloth:0x1B3D63, rough:.9, key:1.5, rimC:0x315B82, rim:2.2, flash:true, final:true },
+];
+
+/* ── tier detection: 3D is the second thing that loads, never the first ── */
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const conn = navigator.connection || {};
+const slow = conn.saveData || /^(slow-)?2g$|^3g$/.test(conn.effectiveType || '');
+const mem = navigator.deviceMemory || 8, cores = navigator.hardwareConcurrency || 8;
+const tier = (reduced || slow) ? 0 : (mem <= 4 || cores <= 4 || innerWidth < 700) ? 1 : 2;
+
+const stage = document.getElementById('stage'), fbEl = document.getElementById('fb');
+const flash = document.getElementById('flash'), typeEl = document.getElementById('type');
+const tEyebrow = document.getElementById('tEyebrow'), tTitle = document.getElementById('tTitle'), tSpec = document.getElementById('tSpec');
+const hudR = document.getElementById('hudR'), ticksEl = document.getElementById('ticks');
+
+ACTS.forEach((_, i) => {
+  const t = document.createElement('span');
+  t.className = 'tick'; t.dataset.on = i === 0; ticksEl.appendChild(t);
+});
+const ticks = [...ticksEl.children];
+
+/* ── procedural denim: twill weave + slub, generated once, no network ── */
+function denimTexture(size) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const x = c.getContext('2d');
+  x.fillStyle = '#8c8c8c'; x.fillRect(0, 0, size, size);
+  for (let i = -size; i < size * 2; i += 5) {                 // 63° right-hand twill
+    x.strokeStyle = 'rgba(255,255,255,.34)'; x.lineWidth = 1.4;
+    x.beginPath(); x.moveTo(i, 0); x.lineTo(i + size * .5, size); x.stroke();
+    x.strokeStyle = 'rgba(0,0,0,.36)';
+    x.beginPath(); x.moveTo(i + 2.4, 0); x.lineTo(i + 2.4 + size * .5, size); x.stroke();
+  }
+  for (let i = 0; i < size * 26; i++) {                        // weft irregularity + slub
+    const a = Math.random() * .16;
+    x.fillStyle = Math.random() > .5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a})`;
+    x.fillRect(Math.random() * size, Math.random() * size, Math.random() * 9 + 1, 1);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+/* ── the dress form: a lathed tailor's mannequin, not a game character ── */
+function buildForm(mat) {
+  const g = new THREE.Group();
+  const profile = [[.70,0],[.66,.30],[.57,.75],[.54,1.00],[.62,1.35],[.75,1.72],[.78,1.95],
+                   [.74,2.22],[.68,2.52],[.60,2.74],[.44,2.94],[.24,3.06],[.16,3.15],[.13,3.22]];
+  const pts = profile.map(([r, y]) => new THREE.Vector2(r, y));
+  const body = new THREE.Mesh(new THREE.LatheGeometry(pts, tier === 2 ? 96 : 40), mat);
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(.13, tier === 2 ? 32 : 16, 12), mat);
+  cap.position.y = 3.22;
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, 1.6, 16),
+    new THREE.MeshStandardMaterial({ color: 0x2a3038, roughness: .35, metalness: .85 }));
+  post.position.y = -.8;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(.62, .68, .07, 40),
+    new THREE.MeshStandardMaterial({ color: 0x1a1f26, roughness: .5, metalness: .7 }));
+  base.position.y = -1.6;
+  g.add(body, cap, post, base);
+  return g;
+}
+
+let renderer, scene, camera, form, weave, key, rim, fill, tex, cloth, ready = false;
+
+function init3D() {
+  const canvas = document.getElementById('gl');
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: tier === 2, alpha: false, powerPreference: 'high-performance' }); }
+  catch (e) { stage.dataset.nogl = 'true'; return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, tier === 2 ? 2 : 1.5));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x07131f, 6, 16);
+  camera = new THREE.PerspectiveCamera(38, 1, .1, 100);
+
+  tex = denimTexture(tier === 2 ? 1024 : 512);
+  tex.repeat.set(7, 7);
+  cloth = new THREE.MeshStandardMaterial({ color: 0x1B3D63, roughness: .94, metalness: .02, bumpMap: tex, bumpScale: .035, roughnessMap: tex });
+
+  const wTex = tex.clone(); wTex.needsUpdate = true; wTex.repeat.set(4, 4);
+  weave = new THREE.Mesh(new THREE.PlaneGeometry(6, 6, 1, 1),
+    new THREE.MeshStandardMaterial({ color: 0x1B3D63, roughness: .95, bumpMap: wTex, bumpScale: .05, roughnessMap: wTex }));
+  weave.position.z = -.2;
+  form = buildForm(cloth);
+
+  key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(3, 5, 4);
+  rim = new THREE.DirectionalLight(0x315B82, 2.2); rim.position.set(-4, 2, -3);
+  fill = new THREE.AmbientLight(0x24405c, .55);
+  scene.add(weave, form, key, rim, fill);
+  ready = true;
+  resize();
+}
+function resize() {
+  if (!ready) return;
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+if (tier > 0 && window.THREE) init3D(); else stage.dataset.nogl = 'true';
+addEventListener('resize', resize, { passive: true });
+
+/* ── the edit: scroll position → act index + local time. The discontinuity
+     at an act boundary IS the cut. Nothing is interpolated across it. ── */
+const film = document.getElementById('film');
+let current = -1, raf = 0, flashTimer = 0;
+
+function applyAct(a, i) {
+  tEyebrow.textContent = a.eyebrow;
+  tTitle.innerHTML = a.title.split('\n').map(l => `<span style="display:block">${l}</span>`).join('');
+  tSpec.textContent = a.spec;
+  typeEl.dataset.final = !!a.final;
+  hudR.textContent = `${String(i + 1).padStart(2, '0')}:00 · ACT ${String(i + 1).padStart(2, '0')}/0${ACTS.length}`;
+  ticks.forEach((t, n) => t.dataset.on = n === i);
+  fbEl.style.setProperty('--fb', a.fb);
+
+  if (a.flash) {                                    // the cut
+    flash.style.background = a.flash === 'ecru' ? 'var(--rw-ecru)' : 'var(--rw-void)';
+    flash.dataset.fire = 'true';
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => flash.dataset.fire = 'false', a.flash === 'ecru' ? 70 : 45);
+  }
+  if (!ready) return;
+  scene.background = new THREE.Color(a.bg);
+  scene.fog.color = new THREE.Color(a.bg);
+  weave.visible = a.mode === 'weave';
+  form.visible = a.mode === 'form';
+  cloth.color.setHex(a.cloth); cloth.roughness = a.rough;
+  weave.material.color.setHex(a.cloth);
+  key.intensity = a.key; rim.intensity = a.rim; rim.color.setHex(a.rimC);
+}
+
+function frame() {
+  raf = 0;
+  const total = film.offsetHeight - innerHeight;
+  const p = Math.min(1, Math.max(0, -film.getBoundingClientRect().top / total));
+  const n = ACTS.length;
+  const i = Math.min(n - 1, Math.floor(p * n));
+  const t = Math.min(1, p * n - i);
+  const a = ACTS[i];
+
+  if (i !== current) { current = i; applyAct(a, i); }
+
+  if (ready) {
+    camera.position.set(
+      a.cam[0] + (a.camTo[0] - a.cam[0]) * t,
+      a.cam[1] + (a.camTo[1] - a.cam[1]) * t,
+      a.cam[2] + (a.camTo[2] - a.cam[2]) * t);
+    camera.lookAt(a.look[0], a.look[1], a.look[2]);
+    if (a.mode === 'form') form.rotation.y = -0.5 + t * 1.15;
+    renderer.render(scene, camera);
+  }
+}
+function onScroll() { if (!raf) raf = requestAnimationFrame(frame); }
+addEventListener('scroll', onScroll, { passive: true });
+frame();
+
+/* pause the loop when the film is off-screen */
+new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) frame(); }), { threshold: 0 }).observe(film);
+
+/* ═══ SHADE CARDS ═══ */
+const FABRICS = [
+  { n:'Raw Selvedge', lot:'RW-F-014', hex:'#1B3D63', w:'14.2 oz', c:'100% Ctn',  s:'Rigid'   },
+  { n:'Dark Indigo',  lot:'RW-F-021', hex:'#16304F', w:'12.0 oz', c:'98/2 Ctn·El', s:'Comfort' },
+  { n:'Mid Blue',     lot:'RW-F-033', hex:'#2E5B85', w:'11.5 oz', c:'99/1 Ctn·El', s:'Comfort' },
+  { n:'Light Wash',   lot:'RW-F-047', hex:'#5C7F9E', w:'9.4 oz',  c:'100% Ctn',  s:'Rigid'   },
+  { n:'Vintage Cast', lot:'RW-F-052', hex:'#3A5A76', w:'13.0 oz', c:'100% Ctn',  s:'Rigid'   },
+  { n:'Black Power',  lot:'RW-F-068', hex:'#131A21', w:'10.8 oz', c:'92/6/2',    s:'High'    },
+];
+document.getElementById('cards').innerHTML = FABRICS.map(f => `
+  <article class="card" tabindex="0" style="--sw:${f.hex}">
+    <span class="card__punch"></span><span class="card__staple"></span>
+    <div class="card__cloth"></div>
+    <div class="card__spec">
+      <h3 class="card__name">${f.n}</h3>
+      <p class="card__row"><span>Weight</span><span>${f.w}</span></p>
+      <p class="card__row"><span>Comp</span><span>${f.c}</span></p>
+      <p class="card__row"><span>Stretch</span><span>${f.s}</span></p>
+      <p class="card__row"><span>Lot</span><span>${f.lot}</span></p>
+    </div>
+  </article>`).join('');
+
+/* ═══ VIDEO PANEL — procedural stand-in for the facility film ═══ */
+const rc = document.getElementById('reelCanvas'), rx = rc.getContext('2d');
+let reelOn = !reduced && !slow, reelT = 0, reelRaf = 0;
+function reelResize() { rc.width = rc.clientWidth; rc.height = rc.clientHeight; }
+reelResize(); addEventListener('resize', reelResize, { passive: true });
+function reelFrame() {
+  reelT += 1 / 60;
+  const w = rc.width, h = rc.height;
+  const g = rx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#0e2740'); g.addColorStop(.55, '#0a1a2b'); g.addColorStop(1, '#050d16');
+  rx.fillStyle = g; rx.fillRect(0, 0, w, h);
+  rx.save(); rx.translate(w / 2, h / 2); rx.rotate(-.55); rx.translate(-w, -h);
+  const off = (reelT * 26) % 8;
+  for (let y = -h; y < h * 3; y += 8) {
+    rx.fillStyle = 'rgba(243,241,236,.045)'; rx.fillRect(-w, y + off, w * 4, 2.2);
+    rx.fillStyle = 'rgba(0,0,0,.30)';       rx.fillRect(-w, y + off + 3, w * 4, 2.6);
+  }
+  rx.restore();
+  const lx = (Math.sin(reelT * .34) * .5 + .5) * w;
+  const lg = rx.createRadialGradient(lx, h * .34, 0, lx, h * .34, Math.max(w, h) * .55);
+  lg.addColorStop(0, 'rgba(120,148,168,.24)'); lg.addColorStop(1, 'rgba(120,148,168,0)');
+  rx.fillStyle = lg; rx.fillRect(0, 0, w, h);
+  document.getElementById('reelTime').textContent =
+    '00:' + String(Math.floor(reelT) % 60).padStart(2, '0');
+  if (reelOn) reelRaf = requestAnimationFrame(reelFrame);
+}
+const reelBtn = document.getElementById('reelToggle');
+reelBtn.textContent = reelOn ? 'Pause film' : 'Play film';
+reelBtn.setAttribute('aria-pressed', String(reelOn));
+reelBtn.onclick = () => {
+  reelOn = !reelOn;
+  reelBtn.textContent = reelOn ? 'Pause film' : 'Play film';
+  reelBtn.setAttribute('aria-pressed', String(reelOn));
+  if (reelOn) reelFrame();else cancelAnimationFrame(reelRaf);
+};
+new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) cancelAnimationFrame(reelRaf); else if (reelOn) reelFrame();
+}), { threshold: .05 }).observe(document.getElementById('reel'));
+reelFrame();
+
+/* ═══ REVEALS ═══ */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}), { rootMargin: '0px 0px -12% 0px' });
+document.querySelectorAll('[data-reveal]').forEach(n => io.observe(n));
+</script>
+</body>
+</html>

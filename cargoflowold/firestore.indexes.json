@@ -1,0 +1,63 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "po_items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "supplierId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "deliveryDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "po_items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "supplierId", "order": "ASCENDING" },
+        { "fieldPath": "deliveryDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "po_items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "deliveryDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "po_items",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "containerId", "order": "ASCENDING" },
+        { "fieldPath": "supplierId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "containers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "vesselId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "read", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activity_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
